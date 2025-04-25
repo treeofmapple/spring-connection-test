@@ -49,6 +49,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DesktopConsole {
 
+	// fix console
+	
+	// fix to put it there to generate data on a button instead everytime the systems starts
+	
+	// and show also on both logs either on normal and the another
+	
 	private final ConfigurableApplicationContext context;
 
 	private JEditorPane textPane;
