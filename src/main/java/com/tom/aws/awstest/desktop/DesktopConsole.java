@@ -55,6 +55,8 @@ public class DesktopConsole {
 	
 	// and show also on both logs either on normal and the another
 	
+	// make it the desktop console show first asking the variables to be inserted 
+	
 	private final ConfigurableApplicationContext context;
 
 	private JEditorPane textPane;
