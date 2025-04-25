@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.tom.aws.awstest.exception.AlreadyExistsException;
+import com.tom.aws.awstest.exception.BadRequestException;
 import com.tom.aws.awstest.exception.DuplicateException;
 import com.tom.aws.awstest.exception.InternalException;
 import com.tom.aws.awstest.exception.InvalidDateException;
@@ -39,7 +40,7 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(exp.getMessage(), HttpStatus.EXPECTATION_FAILED, request, null);
     }
     
-    @ExceptionHandler({ IllegalStateException.class })
+    @ExceptionHandler({ IllegalStateException.class, BadRequestException.class })
     public ResponseEntity<ErrorResponse> handleIllegalException(IllegalStateException exp, HttpServletRequest request) {
         return buildErrorResponse(exp.getMessage(), HttpStatus.BAD_REQUEST, request, null);
     }

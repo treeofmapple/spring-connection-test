@@ -1,4 +1,4 @@
-package com.tom.aws.awstest.security;
+package com.tom.aws.awstest.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,9 +14,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Configuration
+import com.tom.aws.awstest.common.WhitelistLoader;
+import com.tom.aws.awstest.exception.AuthEntryPointJwt;
 
-public class SecurityConfig {
+import lombok.RequiredArgsConstructor;
+
+@Configuration
+@RequiredArgsConstructor
+public class WebSecurityConfig {
+	
+	private final WhitelistLoader whitelist;
+	private final AuthEntryPointJwt unauthorizedHandler;
 	
 	@Value("${application.security.user}")
 	private String user;
@@ -24,20 +32,26 @@ public class SecurityConfig {
 	@Value("${application.security.password}")
 	private String password;
 
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(auth -> auth
-            					.requestMatchers("/api/v1").permitAll()
-                                .requestMatchers("/actuator/**").authenticated()
-                                .anyRequest().permitAll()
-                )
-                .httpBasic(Customizer.withDefaults()) 
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .csrf(csrf -> csrf.disable());
+	@Bean
+	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	    String[] whiteListUrls = whitelist.loadWhitelist();
+	    
+	    http
+	        .exceptionHandling(exception -> 
+	            exception.authenticationEntryPoint(unauthorizedHandler))
+	        .authorizeHttpRequests(auth -> auth
+	            .requestMatchers(whiteListUrls).permitAll()
+	            .requestMatchers("/actuator/**").authenticated()
+	            .anyRequest().denyAll()
+	        )
+	        .httpBasic(Customizer.withDefaults()) 
+	        .sessionManagement(sess -> 
+	            sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+	        .csrf(csrf -> csrf.disable());
 
-        return http.build();
-    }
+	    return http.build();
+	}
+
 	
     @Bean
     UserDetailsService userDetailsService() {

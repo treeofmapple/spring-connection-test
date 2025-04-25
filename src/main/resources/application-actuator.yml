@@ -3,7 +3,7 @@ management:
     web:
       base-path: ${ACTUATOR:/actuator}
       exposure:
-        include: "*"
+        include: ["health", "info", "metrics", "env", "beans", "heapdump", "threaddump", "loggers", "prometheus"]
     access:
       default: read-only
   endpoint:
