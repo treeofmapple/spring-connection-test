@@ -2,6 +2,7 @@ package com.tom.aws.awstest.common;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.tom.aws.awstest.product.Product;
@@ -10,6 +11,7 @@ import com.tom.aws.awstest.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 
 @Component
+@Profile("debug")
 @RequiredArgsConstructor
 public class SystemStarts implements CommandLineRunner {
 
