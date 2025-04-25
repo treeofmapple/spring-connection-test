@@ -7,3 +7,5 @@ spring:
 server:
   port: ${SERVER_PORT:8000}
   address: ${SERVER_ADDRESS:localhost}
+  servlet:
+    context-path: /api
