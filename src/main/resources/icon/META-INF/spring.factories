@@ -1,1 +1,0 @@
-org.springframework.boot.SpringApplicationRunListener=com.tom.aws.awstest.common.BannerConfig
