@@ -28,6 +28,7 @@ public class CustomBanner implements Banner {
             String ip = InetAddress.getLocalHost().getHostAddress();
             
             out.println();
+            out.println();
             out.println("Powered by Spring Boot: " + version);
             out.println("APP: " + appName);
             out.println("Active Profile: " + profiles);

@@ -22,7 +22,8 @@ public class ProductService {
 	private final SystemUtils utils;
 	
     public ProductResponse findProductId(Long productId) {
-        ServiceLogger.info("User is finding product with id: {}", productId);
+    	String userIp = utils.getUserIp();
+        ServiceLogger.info("User {} is finding product with id: {}", userIp, productId);
         return repository.findById(productId)
                 .map(mapper::fromProduct)
                 .orElseThrow(() -> {
@@ -33,7 +34,8 @@ public class ProductService {
     }
 
     public ProductResponse findProductName(NameRequest request) {
-        ServiceLogger.info("User is finding product with name: {}", request.name());
+    	String userIp = utils.getUserIp();
+        ServiceLogger.info("User {} is finding product with name: {}", userIp, request.name());
         return repository.findByName(request.name())
                 .map(mapper::fromProduct)
                 .orElseThrow(() -> {
@@ -44,7 +46,8 @@ public class ProductService {
     }
 
     public List<ProductResponse> findAllProducts() {
-        ServiceLogger.info("User is fetching all products");
+    	String userIp = utils.getUserIp();
+        ServiceLogger.info("User {} is fetching all products", userIp);
         List<Product> products = repository.findAll();
         if (products.isEmpty()) {
             ServiceLogger.warn("No products found");
@@ -55,7 +58,8 @@ public class ProductService {
 
     @Transactional
     public ProductResponse createProduct(ProductRequest request) {
-        ServiceLogger.info("User is creating a new product: {}", request.name());
+    	String userIp = utils.getUserIp();
+        ServiceLogger.info("User {} is creating a new product: {}", userIp, request.name());
         if (repository.existsByName(request.name())) {
             String message = "Product with name " + request.name() + " already exists.";
             ServiceLogger.warn(message);
@@ -71,7 +75,8 @@ public class ProductService {
 
     @Transactional
     public void updateProduct(ProductRequest request) {
-        ServiceLogger.info("User is updating product: {}", request.name());
+    	String userIp = utils.getUserIp();
+        ServiceLogger.info("User {} is updating product: {}", userIp, request.name());
         var product = repository.findByName(request.name())
                 .orElseThrow(() -> {
                     String message = String.format("Product with name %s was not found", request.name());
@@ -87,7 +92,8 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(NameRequest request) {
-        ServiceLogger.info("User is deleting product: {}", request.name());
+    	String userIp = utils.getUserIp();
+        ServiceLogger.info("User {} is deleting product: {}", userIp, request.name());
         if (!repository.existsByName(request.name())) {
             String message = String.format("Product with name %s not found for deletion", request.name());
             ServiceLogger.error(message);
@@ -100,7 +106,8 @@ public class ProductService {
 
     @Transactional
     public void activateProduct(NameRequest request) {
-        ServiceLogger.info("User is activating product: {}", request.name());
+    	String userIp = utils.getUserIp();
+        ServiceLogger.info("User {} is activating product: {}", userIp, request.name());
         var product = repository.findByName(request.name())
                 .orElseThrow(() -> {
                     String message = String.format("Product with name %s not found for activation", request.name());

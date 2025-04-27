@@ -1,6 +1,8 @@
 package com.tom.aws.awstest.common;
 
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.tom.aws.awstest.product.Product;
 import com.tom.aws.awstest.product.ProductRequest;
@@ -18,4 +20,9 @@ public class SystemUtils {
 		product.setManufacturer(request.manufacturer());
 	}
 	
+	public String getUserIp() {
+	    var request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
+	        .getRequest();
+	    return request.getRemoteAddr();
+	}
 }
