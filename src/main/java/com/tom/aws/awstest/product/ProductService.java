@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 public class ProductService {
 
 	private static int QUANTITY = 50;
-	
 	private final ProductRepository repository;
 	private final ProductMapper mapper;
 	private final GenerateData data;
