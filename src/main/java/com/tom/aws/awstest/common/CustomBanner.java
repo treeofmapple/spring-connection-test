@@ -29,7 +29,6 @@ public class CustomBanner implements Banner {
             String ip = getPublicIp();
             
             out.println();
-            out.println();
             out.println("Powered by Spring Boot: " + version);
             out.println("APP: " + appName);
             out.println("Active Profile: " + profiles);
@@ -71,5 +70,4 @@ public class CustomBanner implements Banner {
 			e.printStackTrace();
 		}
 	}
-	
 }
