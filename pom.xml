@@ -67,12 +67,6 @@
 			<artifactId>micrometer-registry-prometheus</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>io.opentelemetry</groupId>
-			<artifactId>opentelemetry-exporter-jaeger</artifactId>
-			<version>1.34.1</version>
-		</dependency>
-
 		<!-- Bucket4j -->
 		<dependency>
 			<groupId>com.bucket4j</groupId>

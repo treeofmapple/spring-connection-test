@@ -15,5 +15,4 @@ public class BannerConfig implements SpringApplicationRunListener {
         application.setBanner(new CustomBanner());
     }
 
-    
 }
