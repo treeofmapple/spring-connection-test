@@ -9,7 +9,7 @@ import com.tom.aws.awstest.product.Product;
 @Configuration
 public class GenerateData implements DatagenUtil {
 
-	protected Product datagen() {
+	public Product datagen() {
 		Product pro = new Product();
 
         String uniqueName = generateUniqueProductName();

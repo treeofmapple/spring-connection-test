@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -41,6 +42,12 @@ public class ProductController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
+	@PostMapping("/generate")
+	public ResponseEntity<String> generateProducts() {
+		service.generateProducts();
+		return ResponseEntity.status(HttpStatus.CREATED).body("Generated");
+	}
+	
 	@PutMapping("/edit")
 	public ResponseEntity<Void> editProduct(@RequestBody @Valid ProductRequest request) {
 		service.updateProduct(request);
@@ -48,7 +55,7 @@ public class ProductController {
 	}
 
 	@DeleteMapping("/delete")
-	public ResponseEntity<Void> deleteProduct(@RequestBody @Valid NameRequest request) {
+	public ResponseEntity<Void> deleteProduct(@RequestParam("name") @Valid String request) {
 		service.deleteProduct(request);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}

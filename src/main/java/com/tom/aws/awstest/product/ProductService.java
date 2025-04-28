@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.tom.aws.awstest.common.GenerateData;
 import com.tom.aws.awstest.common.ServiceLogger;
 import com.tom.aws.awstest.common.SystemUtils;
 import com.tom.aws.awstest.exception.BadRequestException;
@@ -17,8 +18,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductService {
 
+	private static int QUANTITY = 50;
+	
 	private final ProductRepository repository;
 	private final ProductMapper mapper;
+	private final GenerateData data;
 	private final SystemUtils utils;
 	
     public ProductResponse findProductId(Long productId) {
@@ -33,13 +37,13 @@ public class ProductService {
                 });
     }
 
-    public ProductResponse findProductName(NameRequest request) {
+    public ProductResponse findProductName(String request) {
     	String userIp = utils.getUserIp();
-        ServiceLogger.info("User {} is finding product with name: {}", userIp, request.name());
-        return repository.findByName(request.name())
+        ServiceLogger.info("User {} is finding product with name: {}", userIp, request);
+        return repository.findByName(request)
                 .map(mapper::fromProduct)
                 .orElseThrow(() -> {
-                    String message = String.format("Product with name: %s was not found", request.name());
+                    String message = String.format("Product with name: %s was not found", request);
                     ServiceLogger.error(message);
                     return new NotFoundException(message);
                 });
@@ -91,26 +95,26 @@ public class ProductService {
     }
 
     @Transactional
-    public void deleteProduct(NameRequest request) {
+    public void deleteProduct(String request) {
     	String userIp = utils.getUserIp();
-        ServiceLogger.info("User {} is deleting product: {}", userIp, request.name());
-        if (!repository.existsByName(request.name())) {
-            String message = String.format("Product with name %s not found for deletion", request.name());
+        ServiceLogger.info("User {} is deleting product: {}", userIp, request);
+        if (!repository.existsByName(request)) {
+            String message = String.format("Product with name %s not found for deletion", request);
             ServiceLogger.error(message);
             throw new NotFoundException(message);
         }
-        repository.deleteByName(request.name());
+        repository.deleteByName(request);
         
-        ServiceLogger.info("Product deleted successfully: {}", request.name());
+        ServiceLogger.info("Product deleted successfully: {}", request);
     }
 
     @Transactional
-    public void activateProduct(NameRequest request) {
+    public void activateProduct(String request) {
     	String userIp = utils.getUserIp();
-        ServiceLogger.info("User {} is activating product: {}", userIp, request.name());
-        var product = repository.findByName(request.name())
+        ServiceLogger.info("User {} is activating product: {}", userIp, request);
+        var product = repository.findByName(request)
                 .orElseThrow(() -> {
-                    String message = String.format("Product with name %s not found for activation", request.name());
+                    String message = String.format("Product with name %s not found for activation", request);
                     ServiceLogger.error(message);
                     return new NotFoundException(message);
                 });
@@ -120,11 +124,18 @@ public class ProductService {
             repository.save(product);
             ServiceLogger.info("Product activated successfully: {}", product.getId());
         } else {
-            String message = String.format("Product with name %s is already active", request.name());
+            String message = String.format("Product with name %s is already active", request);
             ServiceLogger.warn(message);
             throw new BadRequestException(message);
         }
     }
 
+	public void generateProducts() {
+    	repository.deleteAll();
+		for(int i = 0; i <= QUANTITY; i++) {
+			var gen = data.datagen();
+			repository.save(gen);
+		}
+	}
 
 }

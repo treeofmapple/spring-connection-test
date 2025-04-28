@@ -11,3 +11,7 @@ management:
       access: read-only
     health:
       show-details: always
+    metrics:
+      access: read-only 
+    prometheus:
+      access: unrestricted

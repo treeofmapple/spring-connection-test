@@ -41,7 +41,6 @@ public class WebSecurityConfig {
 	            exception.authenticationEntryPoint(unauthorizedHandler))
 	        .authorizeHttpRequests(auth -> auth
 	            .requestMatchers(whiteListUrls).permitAll()
-	            .requestMatchers("/actuator/**").authenticated()
 	            .anyRequest().denyAll()
 	        )
 	        .httpBasic(Customizer.withDefaults()) 
