@@ -13,21 +13,22 @@ management:
       show-details: always
     metrics:
       access: read-only 
-
+    prometheus:
+      access: unrestricted 
 
   tracing:
+    enabled: true
     sampling:
       probability: 1.0
 
-  graphite:
+  prometheus:
     metrics:
       export:
         enabled: true
-        host: ${GRAPHITE_HOST}
-        port: ${GRAPHITE_PORT}
-        protocol: plaintext
-        step: ${GRAPHITE_STEP} 
-tempo:
-  url: ${TEMPO_URL}
-  username: ${TEMPO_USERNAME}
-  password: ${TEMPO_PASSWORD}
+
+otel:
+  exporter:
+    otlp:
+      endpoint: ${JAEGER_ENDPOINT}
+  traces:
+    exporter: otlp

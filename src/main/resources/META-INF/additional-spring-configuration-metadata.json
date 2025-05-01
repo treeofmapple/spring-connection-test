@@ -1,5 +1,15 @@
 {"properties": [
   {
+    "name": "otel.exporter.otlp.endpoint",
+    "type": "java.lang.String",
+    "description": "A description for 'otel.exporter.otlp.endpoint'"
+  },
+  {
+    "name": "otel.traces.exporter",
+    "type": "java.lang.String",
+    "description": "A description for 'otel.traces.exporter'"
+  },
+  {
     "name": "application.security.user",
     "type": "java.lang.String",
     "description": "A description for 'application.security.user'"
@@ -8,50 +18,5 @@
     "name": "application.security.password",
     "type": "java.lang.String",
     "description": "A description for 'application.security.password'"
-  },
-  {
-    "name": "tracing.url",
-    "type": "java.lang.String",
-    "description": "A description for 'tracing.url'"
-  },
-  {
-    "name": "prometheus.port",
-    "type": "java.lang.String",
-    "description": "A description for 'prometheus.port'"
-  },
-  {
-    "name": "jaeger.endpoint",
-    "type": "java.lang.String",
-    "description": "A description for 'jaeger.endpoint'"
-  },
-  {
-    "name": "telemetry.service",
-    "type": "java.lang.String",
-    "description": "A description for 'telemetry.service'"
-  },
-  {
-    "name": "tempo.url",
-    "type": "java.lang.String",
-    "description": "A description for 'tempo.url'"
-  },
-  {
-    "name": "tempo.instance",
-    "type": "java.lang.String",
-    "description": "A description for 'tempo.instance'"
-  },
-  {
-    "name": "tempo.apikey",
-    "type": "java.lang.String",
-    "description": "A description for 'tempo.apikey'"
-  },
-  {
-    "name": "tempo.username",
-    "type": "java.lang.String",
-    "description": "A description for 'tempo.username'"
-  },
-  {
-    "name": "tempo.password",
-    "type": "java.lang.String",
-    "description": "A description for 'tempo.password'"
   }
 ]}
