@@ -28,5 +28,30 @@
     "name": "telemetry.service",
     "type": "java.lang.String",
     "description": "A description for 'telemetry.service'"
+  },
+  {
+    "name": "tempo.url",
+    "type": "java.lang.String",
+    "description": "A description for 'tempo.url'"
+  },
+  {
+    "name": "tempo.instance",
+    "type": "java.lang.String",
+    "description": "A description for 'tempo.instance'"
+  },
+  {
+    "name": "tempo.apikey",
+    "type": "java.lang.String",
+    "description": "A description for 'tempo.apikey'"
+  },
+  {
+    "name": "tempo.username",
+    "type": "java.lang.String",
+    "description": "A description for 'tempo.username'"
+  },
+  {
+    "name": "tempo.password",
+    "type": "java.lang.String",
+    "description": "A description for 'tempo.password'"
   }
 ]}

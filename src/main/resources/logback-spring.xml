@@ -1,10 +1,15 @@
 <configuration>
   <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
     <http>
-      <url>https://logs-prod3.grafana.net/loki/api/v1/push</url>
+      <url>${LOKI_URL}</url>
       <user>${LOKI_USER}</user>
       <password>${LOKI_PASSWORD}</password>
     </http>
+    
+    <label>
+      <pattern>app=${spring.application.name},level=%level</pattern>
+    </label>
+    
     <encoder class="com.github.loki4j.logback.json.JsonEncoder">
       <pattern>
         {
