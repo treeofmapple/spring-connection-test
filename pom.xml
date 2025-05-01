@@ -61,10 +61,23 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
-		<!-- Metrics -->
+		<!-- Observation -->
 		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
+		  <groupId>io.micrometer</groupId>
+		  <artifactId>micrometer-registry-graphite</artifactId>
+		</dependency>
+		<dependency>
+		  <groupId>com.github.loki4j</groupId>
+		  <artifactId>loki-logback-appender</artifactId>
+		  <version>1.4.0</version>
+		</dependency>
+		<dependency>
+		  <groupId>io.opentelemetry</groupId>
+		  <artifactId>opentelemetry-sdk</artifactId>
+		</dependency>
+		<dependency>
+		  <groupId>io.opentelemetry</groupId>
+		  <artifactId>opentelemetry-exporter-otlp</artifactId>
 		</dependency>
 
 		<!-- Bucket4j -->
