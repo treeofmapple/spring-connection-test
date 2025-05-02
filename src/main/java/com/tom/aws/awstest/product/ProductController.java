@@ -42,12 +42,6 @@ public class ProductController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	@PostMapping("/generate")
-	public ResponseEntity<String> generateProducts() {
-		service.generateProducts();
-		return ResponseEntity.status(HttpStatus.CREATED).body("Generated");
-	}
-	
 	@PutMapping("/edit")
 	public ResponseEntity<Void> editProduct(@RequestBody @Valid ProductRequest request) {
 		service.updateProduct(request);

@@ -6,3 +6,9 @@ spring:
 
 server:
   port: ${SERVER_PORT:8000}
+  ssl:
+    enabled: ${SSL_ENABLE}
+    key-store: classpath:/keystore/keystore.p12
+    key-store-password:
+    key-store-type:
+    key-alias: awstest

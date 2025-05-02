@@ -1,5 +1,8 @@
 package com.tom.aws.awstest.config;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.tom.aws.awstest.common.ServiceLogger;
 import com.tom.aws.awstest.common.WhitelistLoader;
 import com.tom.aws.awstest.exception.AuthEntryPointJwt;
 
@@ -31,17 +35,18 @@ public class WebSecurityConfig {
 	
 	@Value("${application.security.password}")
 	private String password;
+	
+	private String[] whiteListUrls;
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-	    String[] whiteListUrls = whitelist.loadWhitelist();
-	    
+	    loadData();
 	    http
 	        .exceptionHandling(exception -> 
 	            exception.authenticationEntryPoint(unauthorizedHandler))
 	        .authorizeHttpRequests(auth -> auth
 	            .requestMatchers(whiteListUrls).permitAll()
-	            .anyRequest().permitAll()
+	            .anyRequest().authenticated()
 	        )
 	        .httpBasic(Customizer.withDefaults()) 
 	        .sessionManagement(sess -> 
@@ -50,7 +55,6 @@ public class WebSecurityConfig {
 
 	    return http.build();
 	}
-
 	
     @Bean
     UserDetailsService userDetailsService() {
@@ -65,5 +69,14 @@ public class WebSecurityConfig {
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(16);
+    }
+    
+    private void loadData() {
+    	try {
+    	    whiteListUrls = whitelist.loadWhitelist();
+    	} catch (IOException e) {
+    		ServiceLogger.warn("Loaded whitelist URLs: " + Arrays.toString(whiteListUrls));
+    	    throw new RuntimeException("Failed to load whitelist", e);
+    	}
     }
 }
