@@ -26,9 +26,5 @@ management:
       export:
         enabled: true
 
-otel:
-  exporter:
-    otlp:
-      endpoint: ${JAEGER_ENDPOINT}
-  traces:
-    exporter: otlp
+tracing:
+  url: ${JAEGER_URL}
