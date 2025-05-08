@@ -1,6 +1,4 @@
-package com.tom.aws.awstest.product;
-
-import java.math.BigDecimal;
+package com.tom.aws.awstest.image;
 
 import com.tom.aws.awstest.models.Auditable;
 
@@ -13,8 +11,8 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
@@ -22,26 +20,26 @@ import lombok.EqualsAndHashCode;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Table(name = "product")
-public class Product extends Auditable {
+@Table(name = "image")
+public class Image extends Auditable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
-	@Column(name = "product_name", nullable = false, unique = false)
+	@Column(name = "image_name", nullable = false, unique = false)
 	private String name;
 
-	@Column(name = "quantity", nullable = true, unique = false)
-	private int quantity;
+	@Column(name = "object_key", nullable = false, unique = true)
+	private String objectKey;
 
-	@Column(name = "price", nullable = true, unique = false)
-	private BigDecimal price;
+	@Column(name = "object_url", nullable = false, unique = true)
+	private String objectUrl;
 
-	@Column(name = "manufacturer", nullable = true, unique = false)
-	private String manufacturer;
+	@Column(name = "content_type", nullable = false, unique = false)
+	private String contentType;
 
-	@Column(name = "active", nullable = true, unique = false)
-	private boolean active;
+	@Column(name = "size", nullable = false, unique = false)
+	private Long size;
 
 }

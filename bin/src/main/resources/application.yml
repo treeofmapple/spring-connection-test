@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    active: console, database, actuator, service
+  application:
+      name: connectionTester
+
+server:
+  port: ${SERVER_PORT:8000} # set to 8443 to secure

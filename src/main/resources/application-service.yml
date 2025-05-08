@@ -2,3 +2,7 @@ application:
   security:
     user: ${SECURITY_USER:admin}
     password: ${SECURITY_PASSWORD:password}
+
+cloud:
+  aws:
+    bucket-name: ${AWS_BUCKET}

@@ -1,4 +1,4 @@
-package com.tom.aws.awstest.product;
+package com.tom.aws.awstest.models;
 
 import java.time.LocalDateTime;
 
