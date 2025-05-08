@@ -12,6 +12,8 @@ public class AwsConnectionTestApplication {
 		SpringApplication.run(AwsConnectionTestApplication.class, args);
 	}
 
+	// add lambda
+	
+	// add s3 
+	
 }
-
-

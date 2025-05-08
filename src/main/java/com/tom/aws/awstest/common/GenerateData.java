@@ -1,14 +1,24 @@
 package com.tom.aws.awstest.common;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.context.annotation.Configuration;
 
 import com.tom.aws.awstest.product.Product;
 
-@Configuration
-public class GenerateData implements DatagenUtil {
+import net.datafaker.Faker;
 
+@Configuration
+public class GenerateData {
+
+	private final Faker faker = new Faker();
+	// private final AtomicLong atomicCounter = new AtomicLong(0);
+	private final ThreadLocalRandom loc = ThreadLocalRandom.current();
+	private final Set<String> generatedNames = new HashSet<>();
+	
 	public Product datagen() {
 		Product pro = new Product();
 
