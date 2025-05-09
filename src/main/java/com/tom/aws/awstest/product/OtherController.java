@@ -10,23 +10,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/v1")
+@RequestMapping("/v1/product")
 @RequiredArgsConstructor
 public class OtherController {
 
 	private final ProductService service;
 
 	@GetMapping("/get/product")
-	public ResponseEntity<ProductResponse> getProductName(@RequestParam("name") @Valid String request) {
+	public ResponseEntity<ProductResponse> getProductName(@RequestParam("name") @NotBlank(message = "O nome não pode estar em branco") @Valid String request) {
 		var response = service.findProductName(request);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
 	@PutMapping("/activate")
-	public ResponseEntity<Void> activateProduct(@RequestParam("name") @Valid String request) {
+	public ResponseEntity<Void> activateProduct(@RequestParam("name") @NotBlank(message = "O nome não pode estar em branco") @Valid String request) {
 		service.activateProduct(request);
 		return ResponseEntity.status(HttpStatus.OK).build();
 	}

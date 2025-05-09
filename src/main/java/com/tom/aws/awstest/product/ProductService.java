@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.tom.aws.awstest.common.DataMerger;
 import com.tom.aws.awstest.common.GenerateData;
 import com.tom.aws.awstest.common.ServiceLogger;
 import com.tom.aws.awstest.common.SystemUtils;
@@ -22,6 +23,7 @@ public class ProductService {
 	private final ProductRepository repository;
 	private final ProductMapper mapper;
 	private final GenerateData data;
+	private final DataMerger merger;
 	private final SystemUtils utils;
 	
     public ProductResponse findProductId(Long productId) {
@@ -77,7 +79,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void updateProduct(ProductRequest request) {
+    public String updateProduct(ProductRequest request) {
     	String userIp = utils.getUserIp();
         ServiceLogger.info("User {} is updating product: {}", userIp, request.name());
         var product = repository.findByName(request.name())
@@ -87,14 +89,14 @@ public class ProductService {
                     return new NotFoundException(message);
                 });
         
-        utils.mergeData(product, request);
+        merger.mergeData(product, request);
         repository.save(product);
-        
         ServiceLogger.info("Product updated successfully with id: {}", product.getId());
+        return product.getName();
     }
 
     @Transactional
-    public void deleteProduct(String request) {
+    public String deleteProduct(String request) {
     	String userIp = utils.getUserIp();
         ServiceLogger.info("User {} is deleting product: {}", userIp, request);
         if (!repository.existsByName(request)) {
@@ -103,8 +105,8 @@ public class ProductService {
             throw new NotFoundException(message);
         }
         repository.deleteByName(request);
-        
         ServiceLogger.info("Product deleted successfully: {}", request);
+        return request;
     }
 
     @Transactional
