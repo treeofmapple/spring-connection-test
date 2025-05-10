@@ -24,8 +24,8 @@ public interface ProductMapper {
 	@Mapping(source = "price", target = "price")
 	@Mapping(source = "manufacturer", target = "manufacturer")
 	@Mapping(source = "active", target = "active")
-	@Mapping(source = "created", target = "created")
-	@Mapping(source = "updated", target = "updated")
+	@Mapping(source = "createdAt", target = "created")
+	@Mapping(source = "updatedAt", target = "updated")
 	ProductResponse fromProduct(Product product);
 	
 }

@@ -14,6 +14,4 @@ public class AwsConnectionTestApplication {
 
 	// add lambda
 	
-	// add s3 
-	
 }

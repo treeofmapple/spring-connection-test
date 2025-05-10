@@ -5,4 +5,6 @@ application:
 
 cloud:
   aws:
-    bucket-name: ${AWS_BUCKET}
+    region: ${AWS-REGION}
+    bucket: ${AWS-BUCKET}
+    accelerate-enabled: ${S3-ACCELERATION:false}

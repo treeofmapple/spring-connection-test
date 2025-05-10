@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,14 +36,35 @@ public class OtherController {
 	    return ResponseEntity.status(HttpStatus.OK).body(Arrays.asList(files));
 	}
 
-	@GetMapping(value = "/get/tag", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/tag/get", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAllTag() {
-	    return ResponseEntity.status(HttpStatus.OK).body(Arrays.asList(files));
+		
+	    return ResponseEntity.status(HttpStatus.OK).body();
 	}
 	
-	@PostMapping(value = "/add/tag", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/tag/search", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> searchTag() {
+		
+	    return ResponseEntity.status(HttpStatus.OK).body();
+	}
+	
+	
+	
+	@PostMapping(value = "/tag/add", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> addTag() {
-	    return ResponseEntity.status(HttpStatus.OK).body(Arrays.asList(files));
+		
+	    return ResponseEntity.status(HttpStatus.OK).body();
 	}
 	
+	@DeleteMapping(value = "/tag/remove")
+	public ResponseEntity<?> removeTag() {
+		
+	   return ResponseEntity.status(HttpStatus.OK).body();
+	}
+	
+	@DeleteMapping(value = "/tag/delete")
+	public ResponseEntity<?> deleteTag() {
+	
+		return ResponseEntity.status(HttpStatus.OK).body();
+	}
 }

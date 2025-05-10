@@ -7,14 +7,14 @@ public record ImageResponse(
 		
 	String name,
 	String contentType,
-	String tag,
 	Long size,
-	List<TagDTO> tags,
 	LocalDateTime createdAt,
-	LocalDateTime updatedAt
+	LocalDateTime updatedAt,
+	List<TagDTO> tags
 		
 ) {
 
-	public record TagDTO(String key, String value) {}
+	public record TagDTO(String tagKey, String tagValue) {
+	}
 	
 }

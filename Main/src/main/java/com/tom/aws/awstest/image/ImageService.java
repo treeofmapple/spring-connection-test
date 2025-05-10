@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,12 +37,9 @@ import software.amazon.awssdk.services.s3.model.Tagging;
 @RequiredArgsConstructor
 public class ImageService {
 
-    @Value("${cloud.aws.bucket-name}")
-    private String bucketName;
-	
 	private final AwsStorageConfig awsConfig;
 	private final ImageRepository repository;
-	private final ImageMapper mapper; // if needs
+	private final ImageMapper mapper;
 	private final SystemUtils utils;
 	private final DataMerger merger;
 
@@ -76,16 +72,16 @@ public class ImageService {
 		ServiceLogger.info("IP {} is uploading an image", userIp);
 		try {
 			String key = "images/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
-		    awsConfig.s3Client().putObject(PutObjectRequest.builder()
+		    awsConfig.getS3Client().putObject(PutObjectRequest.builder()
 		        .bucket("your-bucket-name")
 		        .key(key)
 		        .contentType(file.getContentType())
 		        .build(),
 		        RequestBody.fromInputStream(file.getInputStream(), file.getSize())
 	        );
-		    String s3Url = awsConfig.s3Client()
+		    String s3Url = awsConfig.getS3Client()
 		    		.utilities()
-		    		.getUrl(builder -> builder.bucket(bucketName).key(key))
+		    		.getUrl(builder -> builder.bucket(awsConfig.getBucketName()).key(key))
 		    		.toExternalForm();
 		    var image = new Image();
 		    merger.mergeData(image, file.getOriginalFilename(), key, s3Url, file.getContentType(), file.getSize());
@@ -106,10 +102,10 @@ public class ImageService {
             return new NotFoundException(message);
 		});
 		
-		return awsConfig.s3Client()
+		return awsConfig.getS3Client()
 				.getObjectAsBytes(
 						GetObjectRequest.builder()
-						.bucket(bucketName)
+						.bucket(awsConfig.getBucketName())
 						.key(image.getObjectKey())
 						.build())
 				.asByteArray();
@@ -126,10 +122,10 @@ public class ImageService {
             return new NotFoundException(message);
 		});
 		
-        awsConfig.s3Client()
+        awsConfig.getS3Client()
         		.deleteObject(
         		DeleteObjectRequest.builder()
-        		.bucket(bucketName)
+        		.bucket(awsConfig.getBucketName())
         		.key(image.getObjectKey())
         		.build());
 
@@ -149,9 +145,9 @@ public class ImageService {
 	        return new NotFoundException(message);
 	    });
 		
-		awsConfig.s3Client()
+		awsConfig.getS3Client()
 				.putObjectTagging(PutObjectTaggingRequest.builder()
-			    .bucket(bucketName)
+			    .bucket(awsConfig.getBucketName())
 			    .key(image.getObjectKey())
 			    .tagging(Tagging.builder()
 			        .tagSet(
@@ -164,6 +160,10 @@ public class ImageService {
 			    .build());
 		
 		return mapper.fromImage(image);
+	}
+	
+	public ImageResponse searchTag(String tagName) {
+		
 	}
 	
 	public Map<String, List<Tag>> getAllTags() {
@@ -180,10 +180,10 @@ public class ImageService {
 		
 		for(Image image : images) {
 	        GetObjectTaggingResponse response = awsConfig
-	        		.s3Client()
+	        		.getS3Client()
 	        		.getObjectTagging(
 	                GetObjectTaggingRequest.builder()
-	                    .bucket(bucketName)
+	                    .bucket(awsConfig.getBucketName())
 	                    .key(image.getObjectKey())
 	                    .build()
 	            );
@@ -192,31 +192,6 @@ public class ImageService {
 		
 		return imageTags;
 	}
-
-	/*
-	
-	public void moveRename() {
-		awsConfig.s3Client()
-				.copyObject(
-				CopyObjectRequest.builder()
-			    .sourceBucket(sourceBucket)
-			    .sourceKey(sourceKey)
-			    .destinationBucket(destBucket)
-			    .destinationKey(destKey)
-			    .build());
-
-		awsConfig.s3Client()
-				.deleteObject(
-				DeleteObjectRequest.builder()
-			    .bucket(sourceBucket)
-			    .key(sourceKey)
-			    .build());
-
-	}
-	
-	*/
-	
-	// compressed data -- Later
 
 	public byte[] encryptData(byte[] data, SecretKey key) throws Exception {
 	    Cipher cipher = Cipher.getInstance("AES");
@@ -228,7 +203,7 @@ public class ImageService {
 	public void uploadEncrypted(String bucket, String keys, byte[] data, SecretKey secretKey) throws Exception {
 	    byte[] encrypted = encryptData(data, secretKey);
 
-	    awsConfig.s3Client()
+	    awsConfig.getS3Client()
 	    		.putObject(PutObjectRequest.builder()
 	            .bucket(bucket)
 	            .key(keys)
@@ -245,17 +220,17 @@ public class ImageService {
 	    for (MultipartFile file : files) {
 	        String key = "images/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
 	        try {
-	            awsConfig.s3Client().putObject(PutObjectRequest.builder()
-	                .bucket(bucketName)
+	            awsConfig.getS3Client().putObject(PutObjectRequest.builder()
+	                .bucket(awsConfig.getBucketName())
 	                .key(key)
 	                .contentType(file.getContentType())
 	                .build(),
 	                RequestBody.fromInputStream(file.getInputStream(), file.getSize())
 	            );
 
-	            String s3Url = awsConfig.s3Client()
+	            String s3Url = awsConfig.getS3Client()
 	                .utilities()
-	                .getUrl(builder -> builder.bucket(bucketName).key(key))
+	                .getUrl(builder -> builder.bucket(awsConfig.getBucketName()).key(key))
 	                .toExternalForm();
 
 	            var image = new Image();
@@ -286,9 +261,9 @@ public class ImageService {
 	            return new NotFoundException(message);
 	        });
 
-	        result[i] = awsConfig.s3Client()
+	        result[i] = awsConfig.getS3Client()
 	            .getObjectAsBytes(GetObjectRequest.builder()
-	                .bucket(bucketName)
+	                .bucket(awsConfig.getBucketName())
 	                .key(image.getObjectKey())
 	                .build())
 	            .asByteArray();
@@ -296,5 +271,30 @@ public class ImageService {
 
 	    return result;
 	}
+	
+	/*
+	
+	public void moveRename() {
+		awsConfig.s3Client()
+				.copyObject(
+				CopyObjectRequest.builder()
+			    .sourceBucket(sourceBucket)
+			    .sourceKey(sourceKey)
+			    .destinationBucket(destBucket)
+			    .destinationKey(destKey)
+			    .build());
+
+		awsConfig.s3Client()
+				.deleteObject(
+				DeleteObjectRequest.builder()
+			    .bucket(sourceBucket)
+			    .key(sourceKey)
+			    .build());
+
+	}
+	
+	*/
+	
+	// compressed data -- Later
 	
 }

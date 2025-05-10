@@ -22,13 +22,13 @@ public class ImageController {
 
 	private final ImageService service;
 	
-	@GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/get/all", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<ImageResponse>> searchAllImage() {
 		var response = service.searchAllImages();
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
-	@GetMapping(value = "/get", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ImageResponse> searchImageByName(@RequestParam("name") String image) {
 		var response = service.searchImageByName(image);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
