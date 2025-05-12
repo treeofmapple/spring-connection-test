@@ -30,7 +30,7 @@ public class ImageService {
 
 	public List<ImageResponse> searchAllObjects() {
 		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is searching for all images", userIp);
+		ServiceLogger.info("IP {} is searching for all objects", userIp);
 		List<Image> images = repository.findAll();
 		if(images.isEmpty()) {
 			ServiceLogger.warn("No products found");
@@ -41,7 +41,7 @@ public class ImageService {
 	
 	public ImageResponse searchObjectByName(String name) {
 		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is searching for image by name: {}", userIp, name);
+		ServiceLogger.info("IP {} is searching for object by name: {}", userIp, name);
 		return repository.findByNameContainingIgnoreCase(name)
 				.map(mapper::fromImage)
 				.orElseThrow(() -> {
@@ -54,7 +54,7 @@ public class ImageService {
 	@Transactional
 	public ImageResponse uploadObject(MultipartFile file) {
 		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is uploading an image", userIp);
+		ServiceLogger.info("IP {} is uploading an object", userIp);
 		String key = "images/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
 	    
 		functions.putObject(key, file);
@@ -104,7 +104,7 @@ public class ImageService {
 	@Transactional
 	public byte[][] downloadMultiple(List<String> names) {
 	    String userIp = utils.getUserIp();
-	    ServiceLogger.info("IP {} is downloading multiple images: {}", userIp, names);
+	    ServiceLogger.info("IP {} is downloading multiple objects: {}", userIp, names);
 
 	    byte[][] result = new byte[names.size()][];
 
@@ -125,7 +125,7 @@ public class ImageService {
 	@Transactional
 	public String deleteObject(String name) {
 		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is searching for all images", userIp);
+		ServiceLogger.info("IP {} is searching for all objects", userIp);
 		
 		Image images = repository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
             String message = String.format("Image with name %s not found", name);
@@ -139,24 +139,61 @@ public class ImageService {
         return "Image deleted successfully";
 	}
 	
-	public String renameObject(String name , String rename) {
+	@Transactional
+	public ImageResponse renameObject(String name , String newName) {
+		String userIp = utils.getUserIp();
+		ServiceLogger.info("IP {} is renaming object with name: {} to: {}", userIp, name, newName);
+		Image images = repository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
+            String message = String.format("Image with name %s not found", name);
+            ServiceLogger.error(message);
+            return new NotFoundException(message);
+		});
 		
-		ServiceLogger.info("Successfully renamed image with name: {} to: {}", name, rename);
+		String newKey = functions.renameObject(images, newName);
 		
+		String newUrl = functions.buildS3Url(newKey);
+		merger.mergeData(images, newKey, newUrl);
+	    repository.save(images);
 		
-	    image.setObjectKey(newKey);
-	    image.setObjectUrl("https://" + awsConfig.getBucketName() + ".s3.amazonaws.com/" + newKey);
-	    image.setName(newName);
-	    repository.save(image);
-		
-		return "Image renamed successfully";
+		return mapper.fromImage(images);
 	}
 	
 	
-	@Transactional
-	public ImageTagResponse addTag(String name, String tagOption, String value) {
+	public List<ItemTagResponse> getAllTags() {
 		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is adding a new tag to the {} images", userIp, name);
+		ServiceLogger.info("IP {} is getting all the tags", userIp);
+		
+	    List<Image> images = repository.findAll();
+	    if (images.isEmpty()) {
+	        ServiceLogger.warn("No images found for tag retrieval");
+	        throw new NotFoundException("No images found in the database");
+	    }
+		
+		for(Image image : images) {
+			var response = functions.getAllTags(image);
+			
+			
+		}
+		
+		return imageTags;
+	}
+
+	@Transactional
+	public ItemTagResponse createTag(String name) {
+		String userIp = utils.getUserIp();
+		ServiceLogger.info("IP {} is creating a new tag with name {}", userIp, name);
+		
+		
+		
+		
+		
+		return mapper.fromItemTag(null);
+	}
+	
+	@Transactional
+	public ImageTagResponse addTag(String name, String tagName) {
+		String userIp = utils.getUserIp();
+		ServiceLogger.info("IP {} is adding a new tag {} to the {} object", userIp, tagName, name);
 		
 	    Image images = repository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
 	        String message = String.format("Image with name %s not found", name);
@@ -164,7 +201,10 @@ public class ImageService {
 	        return new NotFoundException(message);
 	    });
 		
-	    functions.addTags(images, tagOption, value);
+	    functions.addTags(images, tagName);
+
+	    
+	    merger.mergeData(null, images, userIp, value);
 	    
 	    return mapper.fromImageTag(images);
 	}
@@ -196,30 +236,12 @@ public class ImageService {
 	}
 	
 	@Transactional
-	public List<ItemTagResponse> getAllTags() {
-		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is getting all the tags", userIp);
-		
-	    List<Image> images = repository.findAll();
-	    if (images.isEmpty()) {
-	        ServiceLogger.warn("No images found for tag retrieval");
-	        throw new NotFoundException("No images found in the database");
-	    }
-		
-		for(Image image : images) {
-			var response = functions.getAllTags(image);
-			
-			
-		}
-		
-		return imageTags;
-	}
-
-	public ImageTagResponse removeTag() {
+	public ImageTagResponse removeTag(String image, String tagName) {
 		
 	}
 	
-	public ItemTagResponse deleteTag() {
+	@Transactional
+	public ItemTagResponse deleteTag(String tagName) {
 		
 	}
 	
@@ -243,28 +265,8 @@ public class ImageService {
 	            .build(),
 	        RequestBody.fromBytes(encrypted));
 	}
-	
-	public void moveRename() {
-		awsConfig.s3Client()
-				.copyObject(
-				CopyObjectRequest.builder()
-			    .sourceBucket(sourceBucket)
-			    .sourceKey(sourceKey)
-			    .destinationBucket(destBucket)
-			    .destinationKey(destKey)
-			    .build());
 
-		awsConfig.s3Client()
-				.deleteObject(
-				DeleteObjectRequest.builder()
-			    .bucket(sourceBucket)
-			    .key(sourceKey)
-			    .build());
-
-	}
-	
 	*/
-	
 	// compressed data -- Later
 	
 }

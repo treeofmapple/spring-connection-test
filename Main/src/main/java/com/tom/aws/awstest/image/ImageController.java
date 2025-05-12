@@ -37,9 +37,9 @@ public class ImageController {
 	@PostMapping(value = "/upload",
 			consumes = MediaType.APPLICATION_JSON_VALUE, 
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ImageResponse> uploadObject(MultipartFile file, String fileName) {
-		var response = service.uploadObject(file, fileName);
-		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	public ResponseEntity<ImageResponse> uploadObject(MultipartFile file) {
+		var response = service.uploadObject(file);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 	}
 
 	@PostMapping(value = "/download", consumes = MediaType.APPLICATION_JSON_VALUE)

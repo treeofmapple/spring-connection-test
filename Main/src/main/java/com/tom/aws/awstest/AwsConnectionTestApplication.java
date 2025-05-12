@@ -14,4 +14,5 @@ public class AwsConnectionTestApplication {
 
 	// add lambda
 	
+	// if empty or file doens't exist don't search or do other functions
 }

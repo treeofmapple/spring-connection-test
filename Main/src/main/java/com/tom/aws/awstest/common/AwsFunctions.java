@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.tom.aws.awstest.config.AwsStorageConfig;
 import com.tom.aws.awstest.exception.DataTransferenceException;
 import com.tom.aws.awstest.image.Image;
+import com.tom.aws.awstest.image.ImageTag;
 
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -69,27 +70,32 @@ public class AwsFunctions {
 			.build());
 	}
 	
-	public void renameObject(Image image, String newName) { // rename the object
-	    String oldKey = image.getObjectKey();
-	    String extension = oldKey.substring(oldKey.lastIndexOf('.')); // Preserve file extension
+	public String renameObject(Image image, String newName) {
+	    String originalKey = image.getObjectKey();
+	    String extension = originalKey.contains(".") ? originalKey.substring(originalKey.lastIndexOf(".")) : "";
+	    
 	    String newKey = newName + extension;
 	    
 	    awsConfig.getS3Client().copyObject(builder -> builder
 	            .sourceBucket(awsConfig.getBucketName())
-	            .sourceKey(oldKey)
+	            .sourceKey(image.getObjectKey())
 	            .destinationBucket(awsConfig.getBucketName())
 	            .destinationKey(newKey)
         );
 	    
 	    awsConfig.getS3Client().deleteObject(builder -> builder
 	            .bucket(awsConfig.getBucketName())
-	            .key(oldKey)
+	            .key(image.getObjectKey())
         );
 	    
-	    
+	    return newKey;
 	}
 	
 	public void searchTags() {
+		
+	}
+	
+	public void createTag(ImageTag image, String tagName) {
 		
 	}
 	

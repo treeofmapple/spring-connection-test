@@ -27,42 +27,48 @@ public class OtherController {
 	@PostMapping(value = "/upload/multiple", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<ImageResponse>> uploadMultiple(@RequestParam MultipartFile[] files) {
 		var response = service.uploadMultiple(files);
-		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 	}
 	
 	@PostMapping(value = "/download/multiple", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<byte[]>> downloadMultiple(@RequestBody List<String> names) {
 	    byte[][] files = service.downloadMultiple(names);
-	    return ResponseEntity.status(HttpStatus.OK).body(Arrays.asList(files));
+	    return ResponseEntity.status(HttpStatus.ACCEPTED).body(Arrays.asList(files));
 	}
 
 	@GetMapping(value = "/tag/get", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getAllTag() {
-		
-	    return ResponseEntity.status(HttpStatus.OK).body();
+	public ResponseEntity<List<ItemTagResponse>> getAllTag() {
+		var response = service.getAllTags();
+	    return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@GetMapping(value = "/tag/search", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> searchTag() {
-		
-	    return ResponseEntity.status(HttpStatus.OK).body();
+	public ResponseEntity<List<ImageTagResponse>> searchTag(@RequestParam String name) {
+		var response = service.searchTags(name);
+	    return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	@PostMapping(value = "/tag/create", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ItemTagResponse> createTag(@RequestParam String name) {
+		var response = service.createTag(name);
+	    return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 	
 	@PostMapping(value = "/tag/add", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> addTag() {
-		
-	    return ResponseEntity.status(HttpStatus.OK).body();
+	public ResponseEntity<ImageTagResponse> addTag(@RequestParam String image, @RequestParam String tagName) {
+		var response = service.addTag(image, tagName);
+	    return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 	}
 	
 	@DeleteMapping(value = "/tag/remove")
-	public ResponseEntity<?> removeTag() {
-		
-	   return ResponseEntity.status(HttpStatus.OK).body();
+	public ResponseEntity<ImageTagResponse> removeTag(@RequestParam String image, @RequestParam("tagname") String tagName) {
+		var response = service.removeTag(image, tagName);
+	   return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
 	}
 	
 	@DeleteMapping(value = "/tag/delete")
-	public ResponseEntity<?> deleteTag() {
-	
-		return ResponseEntity.status(HttpStatus.OK).body();
+	public ResponseEntity<ItemTagResponse> deleteTag(@RequestParam("tagname") String tagName) {
+		var response = service.deleteTag(tagName);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
 	}
 }
