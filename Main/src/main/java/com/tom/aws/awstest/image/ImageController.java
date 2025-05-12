@@ -23,34 +23,42 @@ public class ImageController {
 	private final ImageService service;
 	
 	@GetMapping(value = "/get/all", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<ImageResponse>> searchAllImage() {
-		var response = service.searchAllImages();
+	public ResponseEntity<List<ImageResponse>> searchAllObjects() {
+		var response = service.searchAllObjects();
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ImageResponse> searchImageByName(@RequestParam("name") String image) {
-		var response = service.searchImageByName(image);
+	public ResponseEntity<ImageResponse> searchObjectByName(@RequestParam("name") String image) {
+		var response = service.searchObjectByName(image);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
 	@PostMapping(value = "/upload",
 			consumes = MediaType.APPLICATION_JSON_VALUE, 
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ImageResponse> uploadImage(MultipartFile file) {
-		var response = service.uploadImage(file);
+	public ResponseEntity<ImageResponse> uploadObject(MultipartFile file, String fileName) {
+		var response = service.uploadObject(file, fileName);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
 	@PostMapping(value = "/download", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<byte[]> downloadImage(@RequestParam("name") String images) {
-		var response = service.downloadImage(images);
+	public ResponseEntity<byte[]> downloadObject(@RequestParam("name") String images) {
+		var response = service.downloadObject(images);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+	}
+	
+	@PostMapping(value = "/rename", 
+			produces = MediaType.APPLICATION_JSON_VALUE
+			)
+	public ResponseEntity<ImageResponse> renameObject(@RequestParam("name") String images, String rename) {
+		var response = service.renameObject(images, rename);
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 	}
 
 	@DeleteMapping(value = "/delete")
 	public ResponseEntity<String> deleteImage(@RequestParam("name") String images) {
-		var response = service.deleteImage(images);
+		var response = service.deleteObject(images);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
 	}
 }

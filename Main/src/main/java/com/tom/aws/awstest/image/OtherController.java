@@ -48,8 +48,6 @@ public class OtherController {
 	    return ResponseEntity.status(HttpStatus.OK).body();
 	}
 	
-	
-	
 	@PostMapping(value = "/tag/add", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> addTag() {
 		
