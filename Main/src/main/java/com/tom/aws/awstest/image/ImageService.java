@@ -23,7 +23,8 @@ import software.amazon.awssdk.services.s3.model.GetObjectTaggingResponse;
 public class ImageService {
 
 	private final AwsFunctions functions;
-	private final ImageRepository repository;
+	private final ImageRepository imageRepository;
+	private final ImageTagRepository tagRepository;
 	private final ImageMapper mapper;
 	private final SystemUtils utils;
 	private final DataMerger merger;
@@ -31,7 +32,7 @@ public class ImageService {
 	public List<ImageResponse> searchAllObjects() {
 		String userIp = utils.getUserIp();
 		ServiceLogger.info("IP {} is searching for all objects", userIp);
-		List<Image> images = repository.findAll();
+		List<Image> images = imageRepository.findAll();
 		if(images.isEmpty()) {
 			ServiceLogger.warn("No products found");
 			throw new NotFoundException("No products found in the database");
@@ -42,7 +43,7 @@ public class ImageService {
 	public ImageResponse searchObjectByName(String name) {
 		String userIp = utils.getUserIp();
 		ServiceLogger.info("IP {} is searching for object by name: {}", userIp, name);
-		return repository.findByNameContainingIgnoreCase(name)
+		return imageRepository.findByNameContainingIgnoreCase(name)
 				.map(mapper::fromImage)
 				.orElseThrow(() -> {
 			String message = String.format("Product with id: %s was not found", name);
@@ -63,7 +64,7 @@ public class ImageService {
 		
 		var image = new Image();
 	    merger.mergeData(image, file.getOriginalFilename(), key, s3Url, file.getContentType(), file.getSize());
-	    repository.save(image);
+	    imageRepository.save(image);
 	    return mapper.fromImage(image);
 	}
 	
@@ -71,7 +72,7 @@ public class ImageService {
 	public byte[] downloadObject(String name) {
 		String userIp = utils.getUserIp();
 		ServiceLogger.info("IP {} is downloading image with name: {}", userIp, name);
-		Image images = repository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
+		Image images = imageRepository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
             String message = String.format("Image with name %s not found", name);
             ServiceLogger.error(message);
             return new NotFoundException(message);
@@ -92,7 +93,7 @@ public class ImageService {
 	        String s3Url = functions.buildS3Url(key);
             var image = new Image();
             merger.mergeData(image, file.getOriginalFilename(), key, s3Url, file.getContentType(), file.getSize());
-            repository.save(image);
+            imageRepository.save(image);
 
             responses.add(mapper.fromImage(image));
 
@@ -110,7 +111,7 @@ public class ImageService {
 
 	    for (int i = 0; i < names.size(); i++) {
 	        String name = names.get(i);
-	        Image images = repository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
+	        Image images = imageRepository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
 	            String message = String.format("Image with name %s not found", name);
 	            ServiceLogger.error(message);
 	            return new NotFoundException(message);
@@ -127,14 +128,14 @@ public class ImageService {
 		String userIp = utils.getUserIp();
 		ServiceLogger.info("IP {} is searching for all objects", userIp);
 		
-		Image images = repository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
+		Image images = imageRepository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
             String message = String.format("Image with name %s not found", name);
             ServiceLogger.error(message);
             return new NotFoundException(message);
 		});
 		
 		functions.deleteObject(images);
-        repository.delete(images);
+        imageRepository.delete(images);
         ServiceLogger.info("Successfully deleted image with name: {}", name);
         return "Image deleted successfully";
 	}
@@ -143,7 +144,7 @@ public class ImageService {
 	public ImageResponse renameObject(String name , String newName) {
 		String userIp = utils.getUserIp();
 		ServiceLogger.info("IP {} is renaming object with name: {} to: {}", userIp, name, newName);
-		Image images = repository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
+		Image images = imageRepository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
             String message = String.format("Image with name %s not found", name);
             ServiceLogger.error(message);
             return new NotFoundException(message);
@@ -153,7 +154,7 @@ public class ImageService {
 		
 		String newUrl = functions.buildS3Url(newKey);
 		merger.mergeData(images, newKey, newUrl);
-	    repository.save(images);
+	    imageRepository.save(images);
 		
 		return mapper.fromImage(images);
 	}
@@ -163,7 +164,7 @@ public class ImageService {
 		String userIp = utils.getUserIp();
 		ServiceLogger.info("IP {} is getting all the tags", userIp);
 		
-	    List<Image> images = repository.findAll();
+	    List<Image> images = imageRepository.findAll();
 	    if (images.isEmpty()) {
 	        ServiceLogger.warn("No images found for tag retrieval");
 	        throw new NotFoundException("No images found in the database");
@@ -195,7 +196,7 @@ public class ImageService {
 		String userIp = utils.getUserIp();
 		ServiceLogger.info("IP {} is adding a new tag {} to the {} object", userIp, tagName, name);
 		
-	    Image images = repository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
+	    Image images = imageRepository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
 	        String message = String.format("Image with name %s not found", name);
 	        ServiceLogger.error(message);
 	        return new NotFoundException(message);
@@ -216,7 +217,7 @@ public class ImageService {
 
 	    List<ImageResponse> matchingImages = new ArrayList<>();
 
-	    for (Image image : repository.findAll()) {
+	    for (Image image : imageRepository.findAll()) {
 	        GetObjectTaggingResponse tags = functions.getAllTags(image);
 	        boolean hasTag = tags.tagSet().stream()
 	            .anyMatch(tag -> tag.key().equalsIgnoreCase(tagName));
