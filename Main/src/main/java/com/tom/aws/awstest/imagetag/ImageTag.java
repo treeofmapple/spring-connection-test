@@ -1,6 +1,7 @@
 package com.tom.aws.awstest.imagetag;
 
 import com.tom.aws.awstest.image.Image;
+import com.tom.aws.awstest.models.Auditable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,24 +14,26 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @Table(name = "image_tag")
-public class ImageTag {
+public class ImageTag extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
     
-    @Column(nullable = false, unique = true)
+    @Column(name = "category", nullable = false, unique = true)
     private String category;
 
-    @Column(nullable = true, unique = false)
-    private String subcategory;
+    @Column(name = "sub_category", nullable = true, unique = false)
+    private String subCategory;
 	
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "image_id", nullable = true)
