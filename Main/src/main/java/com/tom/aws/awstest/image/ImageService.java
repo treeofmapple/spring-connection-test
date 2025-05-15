@@ -20,6 +20,9 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ImageService {
+	
+	// check if something exists on the database then don't allow it to download...
+	
 
 	private final AwsFunctions functions;
 	private final ImageRepository imageRepository;

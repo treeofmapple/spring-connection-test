@@ -31,7 +31,7 @@ public class Image extends Auditable {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
-	@Column(name = "image_name", nullable = false, unique = false)
+	@Column(name = "image_name", nullable = false, unique = true)
 	private String name;
 
 	@Column(name = "object_key", nullable = false, unique = true)
@@ -50,6 +50,7 @@ public class Image extends Auditable {
     		cascade = CascadeType.ALL, 
     		orphanRemoval = true, 
     		fetch = FetchType.LAZY)
+    @Column(nullable = true, unique = false)
     private List<ImageTag> tags;
 	
 }

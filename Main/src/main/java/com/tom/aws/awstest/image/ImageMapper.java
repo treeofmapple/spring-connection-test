@@ -20,5 +20,4 @@ public interface ImageMapper {
 	@Mapping(source = "updatedAt", target = "updatedAt")
 	ImageResponse fromImage(Image image);
 	
-	
 }
