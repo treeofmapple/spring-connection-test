@@ -58,5 +58,10 @@
     "name": "cloud.aws.bucket",
     "type": "java.lang.String",
     "description": "A description for 'cloud.aws.bucket'"
+  },
+  {
+    "name": "tracing.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'tracing.enabled'"
   }
 ]}

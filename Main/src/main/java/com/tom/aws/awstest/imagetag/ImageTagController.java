@@ -1,5 +1,7 @@
 package com.tom.aws.awstest.imagetag;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,21 +24,21 @@ public class ImageTagController {
 	
 	@GetMapping(value = "/get/all", 
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> searchAllTags(){
+	public ResponseEntity<List<ImageTagResponse>> searchAllTags(){
 		var response = service.searchAllTags();
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@GetMapping(value = "/get/category", 
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> searchCategory(@RequestParam String name) {
+	public ResponseEntity<List<ImageTagResponse>> searchCategory(@RequestParam String name) {
 		var response = service.searchCategory(name);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@GetMapping(value = "/get/subcategory", 
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> searchSubcategory(@RequestParam String name){
+	public ResponseEntity<List<ImageTagResponse>> searchSubcategory(@RequestParam String name){
 		var response = service.searchSubcategory(name);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
@@ -44,7 +46,7 @@ public class ImageTagController {
 	@PostMapping(value = "/new/category",
 			consumes = MediaType.APPLICATION_JSON_VALUE, 
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> createCategory(@RequestParam String name){
+	public ResponseEntity<ItemTagResponse> createCategory(@RequestParam String name){
 		var response = service.createCategory(name);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
@@ -52,7 +54,7 @@ public class ImageTagController {
 	@PostMapping(value = "/new/subcategory",
 			consumes = MediaType.APPLICATION_JSON_VALUE, 
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> createSubcategory(@RequestParam String name){
+	public ResponseEntity<ItemTagResponse> createSubcategory(@RequestParam String name){
 		var response = service.createSubcategory(name);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
@@ -60,36 +62,35 @@ public class ImageTagController {
 	@PostMapping(value = "/new/catsubcategory",
 			consumes = MediaType.APPLICATION_JSON_VALUE, 
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> createCategorySubcategory(@RequestParam String category, @RequestParam String subcategory){
+	public ResponseEntity<ItemTagResponse> createCategorySubcategory(@RequestParam String category, @RequestParam String subcategory){
 		var response = service.createCategorySubcategory(category, subcategory);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@PutMapping(value = "/rename/category", 
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> editCategory(@RequestParam String category, @RequestParam("rename") String newName){
+	public ResponseEntity<ItemTagResponse> editCategory(@RequestParam String category, @RequestParam("rename") String newName){
 		var response = service.editCategory(category, newName);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
 	@PutMapping(value = "/rename/subcategory", 
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> editSubcategory(@RequestParam("subcat") String category, @RequestParam("rename") String newName){
-		var response = service.editSubcategory(category, newName);
+	public ResponseEntity<ItemTagResponse> editSubcategory(@RequestParam("subcat") String category, @RequestParam("rename") String newName){
+		var response = service.editCategory(category, newName);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
 	@DeleteMapping(value = "/delete/category")
-	public ResponseEntity<?> deleteCategory(@RequestParam String name){
+	public ResponseEntity<ItemTagResponse> deleteCategory(@RequestParam String name){
 		var response = service.deleteCategory(name);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@DeleteMapping(value = "/delete/subcategory")
-	public ResponseEntity<?> deleteSubcategory(@RequestParam String name){
+	public ResponseEntity<ItemTagResponse> deleteSubcategory(@RequestParam String name){
 		var response = service.deleteSubcategory(name);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
-	
 }
