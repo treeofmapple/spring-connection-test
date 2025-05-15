@@ -30,7 +30,7 @@ public class AwsStorageConfig {
     @PostConstruct
     public void init() {
         this.s3Client = S3Client.builder()
-                .region(Region.of(properties.getRegion()))
+                .region(Region.of(properties.getRegion())) //
                 .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
                 .build();
 
