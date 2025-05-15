@@ -1,9 +1,11 @@
 package com.tom.aws.awstest.common;
+import org.springframework.stereotype.Service;
+
 import com.tom.aws.awstest.image.Image;
-import com.tom.aws.awstest.image.oldTag.ImageTagOld;
 import com.tom.aws.awstest.product.Product;
 import com.tom.aws.awstest.product.ProductRequest;
 
+@Service
 public class DataMerger {
 
 	public void mergeData(Product product, ProductRequest request) {
@@ -26,16 +28,13 @@ public class DataMerger {
 		images.setObjectUrl(url);
 	}
 	
-	public void mergeData(ImageTagOld images, Image image, String tagKey, String tagValue) {
-		images.setImage(image);
-		images.setTagKey(tagKey);
-		images.setTagValue(tagValue);
-		
-	}
+
 	
-	public void mergeData(ImageTagOld images, String tagKey, String tagValue) {
-		images.setTagKey(tagKey);
-		images.setTagValue(tagValue);
-		
-	}
+	
+
+	
+	
+	
+	
+	
 }

@@ -14,12 +14,20 @@ public class ServiceLogger {
                         .orElse("UnknownClass"));
     }
 
+    public static void info() {
+        log.info("[{}] -> {}", getCallerClassName());
+    }
+    
     public static void info(String message) {
         log.info("[{}] -> {}", getCallerClassName(), message);
     }
 
     public static void info(String message, Object... args) {
         log.info("[{}] -> " + message, getCallerClassName(), args);
+    }
+    
+    public static void warn() {
+        log.warn("[{}] -> {}", getCallerClassName());
     }
     
     public static void warn(String message) {
@@ -30,12 +38,20 @@ public class ServiceLogger {
         log.warn("[{}] -> " + message, getCallerClassName(), args);
     }
     
+    public static void error() {
+        log.error("[{}] -> {}", getCallerClassName());
+    }
+    
     public static void error(String message) {
         log.error("[{}] -> {}", getCallerClassName(), message);
     }
     
     public static void error(String message, Object... args) {
         log.error("[{}] -> " + message, getCallerClassName(), args);
+    }
+    
+    public static void debug() {
+        log.debug("[{}] -> {}", getCallerClassName());
     }
 
     public static void debug(String message) {

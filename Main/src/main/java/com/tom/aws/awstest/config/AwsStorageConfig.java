@@ -2,6 +2,8 @@ package com.tom.aws.awstest.config;
 
 import org.springframework.context.annotation.Configuration;
 
+import com.tom.aws.awstest.common.ServiceLogger;
+
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import software.amazon.awssdk.services.s3.model.BucketAccelerateStatus;
 import software.amazon.awssdk.services.s3.model.BucketVersioningStatus;
 import software.amazon.awssdk.services.s3.model.PutBucketAccelerateConfigurationRequest;
 import software.amazon.awssdk.services.s3.model.PutBucketVersioningRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.VersioningConfiguration;
 
 @Configuration
@@ -22,7 +25,7 @@ public class AwsStorageConfig {
     private final AwsProperties properties;
     
     @Getter
-    private S3Client s3Client;
+    S3Client s3Client;
 
     @PostConstruct
     public void init() {
@@ -38,25 +41,33 @@ public class AwsStorageConfig {
     }
     
 	private void enableAccelerateMode() {
-        s3Client.putBucketAccelerateConfiguration(
-                PutBucketAccelerateConfigurationRequest.builder()
-                        .bucket(properties.getBucket())
-                        .accelerateConfiguration(
-                                AccelerateConfiguration.builder()
-                                        .status(BucketAccelerateStatus.ENABLED)
-                                        .build())
-                        .build());
+        try {
+			s3Client.putBucketAccelerateConfiguration(
+			        PutBucketAccelerateConfigurationRequest.builder()
+			                .bucket(properties.getBucket())
+			                .accelerateConfiguration(
+			                        AccelerateConfiguration.builder()
+			                                .status(BucketAccelerateStatus.ENABLED)
+			                                .build())
+			                .build());
+		} catch (S3Exception e) {
+			ServiceLogger.error("Failed to enable aceleration: {}", e.awsErrorDetails().errorMessage());
+		}
     }
 
     private void enableVersioning() {
-        s3Client.putBucketVersioning(
-                PutBucketVersioningRequest.builder()
-                        .bucket(properties.getBucket())
-                        .versioningConfiguration(
-                                VersioningConfiguration.builder()
-                                        .status(BucketVersioningStatus.ENABLED)
-                                        .build())
-                        .build());
+        try {
+			s3Client.putBucketVersioning(
+			        PutBucketVersioningRequest.builder()
+			                .bucket(properties.getBucket())
+			                .versioningConfiguration(
+			                        VersioningConfiguration.builder()
+			                                .status(BucketVersioningStatus.ENABLED)
+			                                .build())
+			                .build());
+		} catch (S3Exception e) {
+			ServiceLogger.error("Failed to enable bucket versioning: {}", e.awsErrorDetails().errorMessage());
+		}
     }
 	
 

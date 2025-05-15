@@ -1,4 +1,4 @@
-package com.tom.aws.awstest.image.oldTag;
+package com.tom.aws.awstest.imagetag;
 
 import com.tom.aws.awstest.image.Image;
 
@@ -24,16 +24,16 @@ public class ImageTag {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-
+    private Integer id;
+    
     @Column(nullable = false, unique = true)
-    private String tagKey;
+    private String category;
 
     @Column(nullable = true, unique = false)
-    private String tagValue;
-
+    private String subcategory;
+	
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "image_id", nullable = true)
     private Image image;
-
+	
 }

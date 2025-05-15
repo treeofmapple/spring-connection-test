@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/v1/product")
 @RequiredArgsConstructor
-public class OtherController {
+public class ProductControllerAlt {
 
 	private final ProductService service;
 

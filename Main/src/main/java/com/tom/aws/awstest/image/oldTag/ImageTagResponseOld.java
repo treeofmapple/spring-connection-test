@@ -1,6 +1,6 @@
 package com.tom.aws.awstest.image.oldTag;
 
-public record ImageTagResponse(
+public record ImageTagResponseOld(
 		
 	String imageName,
 	String tagKey,

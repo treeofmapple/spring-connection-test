@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/v1/images")
 @RequiredArgsConstructor
-public class OtherController {
+public class ImageControllerAlt {
 
 	private final ImageService service;
 	

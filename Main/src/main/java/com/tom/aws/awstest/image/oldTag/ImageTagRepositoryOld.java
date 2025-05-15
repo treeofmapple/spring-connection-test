@@ -8,13 +8,13 @@ import org.springframework.data.jpa.repository.Modifying;
 
 import jakarta.transaction.Transactional;
 
-public interface ImageTagRepository extends JpaRepository<ImageTag, Long> {
+public interface ImageTagRepositoryOld extends JpaRepository<ImageTagOld, Long> {
 
-	List<ImageTag> findByTagKey(String name);
+	List<ImageTagOld> findByTagKey(String name);
 	
 	boolean existsByTagKey(String name);
 	
-	Optional<ImageTag> findByTagKeyContainingIgnoreCase(String name);
+	Optional<ImageTagOld> findByTagKeyContainingIgnoreCase(String name);
 	
 	@Modifying
 	@Transactional
