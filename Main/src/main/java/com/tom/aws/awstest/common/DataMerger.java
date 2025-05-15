@@ -1,6 +1,6 @@
 package com.tom.aws.awstest.common;
 import com.tom.aws.awstest.image.Image;
-import com.tom.aws.awstest.image.ImageTag;
+import com.tom.aws.awstest.image.oldTag.ImageTagOld;
 import com.tom.aws.awstest.product.Product;
 import com.tom.aws.awstest.product.ProductRequest;
 
@@ -26,8 +26,14 @@ public class DataMerger {
 		images.setObjectUrl(url);
 	}
 	
-	public void mergeData(ImageTag images, Image image, String tagKey, String tagValue) {
+	public void mergeData(ImageTagOld images, Image image, String tagKey, String tagValue) {
 		images.setImage(image);
+		images.setTagKey(tagKey);
+		images.setTagValue(tagValue);
+		
+	}
+	
+	public void mergeData(ImageTagOld images, String tagKey, String tagValue) {
 		images.setTagKey(tagKey);
 		images.setTagValue(tagValue);
 		

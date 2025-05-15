@@ -1,4 +1,4 @@
-package com.tom.aws.awstest.image;
+package com.tom.aws.awstest.image.oldTag;
 
 public record ImageTagResponse(
 		

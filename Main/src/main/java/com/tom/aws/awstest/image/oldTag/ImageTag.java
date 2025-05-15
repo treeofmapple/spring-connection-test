@@ -1,4 +1,6 @@
-package com.tom.aws.awstest.image;
+package com.tom.aws.awstest.image.oldTag;
+
+import com.tom.aws.awstest.image.Image;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,14 +26,14 @@ public class ImageTag {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(nullable = false, unique = false)
+    @Column(nullable = false, unique = true)
     private String tagKey;
 
-    @Column(nullable = false, unique = false)
+    @Column(nullable = true, unique = false)
     private String tagValue;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "image_id", nullable = false)
+    @JoinColumn(name = "image_id", nullable = true)
     private Image image;
 
 }

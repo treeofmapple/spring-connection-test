@@ -2,6 +2,7 @@ package com.tom.aws.awstest.image;
 
 import java.util.List;
 
+import com.tom.aws.awstest.image.oldTag.ImageTagOld;
 import com.tom.aws.awstest.models.Auditable;
 
 import jakarta.persistence.CascadeType;
@@ -49,6 +50,6 @@ public class Image extends Auditable {
     		cascade = CascadeType.ALL, 
     		orphanRemoval = true, 
     		fetch = FetchType.LAZY)
-    private List<ImageTag> tags;
+    private List<ImageTagOld> tags;
 	
 }

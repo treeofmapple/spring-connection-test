@@ -1,7 +1,6 @@
 package com.tom.aws.awstest.common;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,18 +8,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.tom.aws.awstest.config.AwsStorageConfig;
 import com.tom.aws.awstest.exception.DataTransferenceException;
 import com.tom.aws.awstest.image.Image;
-import com.tom.aws.awstest.image.ImageTag;
 
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectTaggingRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectTaggingResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectTaggingRequest;
-import software.amazon.awssdk.services.s3.model.Tag;
-import software.amazon.awssdk.services.s3.model.Tagging;
 
 @Component
 @RequiredArgsConstructor
@@ -89,52 +82,42 @@ public class AwsFunctions {
         );
 	    
 	    return newKey;
+	
 	}
 	
-	public void searchTags() {
-		
-	}
+	/*
 	
-	public void createTag(ImageTag image, String tagName) {
-		
-	}
-	
-	public void addTags(Image image, String tagOption, String value) {
+	public void addTags(Image image, String tagKey, String tagValue) {
 		awsConfig.getS3Client()
 			.putObjectTagging(PutObjectTaggingRequest.builder()
 		    .bucket(awsConfig.getBucketName())
 		    .key(image.getObjectKey())
 		    .tagging(Tagging.builder()
 		        .tagSet(List.of(Tag.builder()
-		        		.key(tagOption)
-		        		.value(value)
+		        		.key(tagKey)
+		        		.value(tagValue)
 		        		.build())).build())
 		    .build());
 	}
 	
-	public GetObjectTaggingResponse getAllTags(Image image) {
-	    return awsConfig.getS3Client().getObjectTagging(
-	            GetObjectTaggingRequest.builder()
-	                .bucket(awsConfig.getBucketName())
-	                .key(image.getObjectKey())
-	                .build()
-        );
-	}
-	
-	public void removeTags(Image image, String tag) { // remove one tag from a current image
+	public void removeTag(Image image, String tagKey, String tagValue) { // remove one tag from a current image
 	    awsConfig.getS3Client().putObjectTagging(
 	            PutObjectTaggingRequest.builder()
 	                .bucket(awsConfig.getBucketName())
 	                .key(image.getObjectKey())
 	                .tagging(Tagging.builder()
-	                    .tagSet(tag)
+	                    .tagSet(List.of(Tag.builder()
+	                    		.key(tag)
+	                    		))
 	                    .build())
 	                .build()
         );
 	}
 	
-	public void deleteTags() { // delete the tag, and if is on a image remove it also
+	public void deleteTags(String tagKey, String tagValue) { // delete the tag, and if is on a image remove it also
 		
 	}
+	
+	*/
 	
 }

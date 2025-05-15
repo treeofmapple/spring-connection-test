@@ -16,7 +16,6 @@ import com.tom.aws.awstest.exception.NotFoundException;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import software.amazon.awssdk.services.s3.model.GetObjectTaggingResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +23,7 @@ public class ImageService {
 
 	private final AwsFunctions functions;
 	private final ImageRepository imageRepository;
-	private final ImageTagRepository tagRepository;
+	// private final ImageTagRepository tagRepository;
 	private final ImageMapper mapper;
 	private final SystemUtils utils;
 	private final DataMerger merger;
@@ -158,116 +157,5 @@ public class ImageService {
 		
 		return mapper.fromImage(images);
 	}
-	
-	
-	public List<ItemTagResponse> getAllTags() {
-		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is getting all the tags", userIp);
-		
-	    List<Image> images = imageRepository.findAll();
-	    if (images.isEmpty()) {
-	        ServiceLogger.warn("No images found for tag retrieval");
-	        throw new NotFoundException("No images found in the database");
-	    }
-		
-		for(Image image : images) {
-			var response = functions.getAllTags(image);
-			
-			
-		}
-		
-		return imageTags;
-	}
-
-	@Transactional
-	public ItemTagResponse createTag(String name) {
-		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is creating a new tag with name {}", userIp, name);
-		
-		
-		
-		
-		
-		return mapper.fromItemTag(null);
-	}
-	
-	@Transactional
-	public ImageTagResponse addTag(String name, String tagName) {
-		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is adding a new tag {} to the {} object", userIp, tagName, name);
-		
-	    Image images = imageRepository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
-	        String message = String.format("Image with name %s not found", name);
-	        ServiceLogger.error(message);
-	        return new NotFoundException(message);
-	    });
-		
-	    functions.addTags(images, tagName);
-
-	    
-	    merger.mergeData(null, images, userIp, value);
-	    
-	    return mapper.fromImageTag(images);
-	}
-	
-	@Transactional
-	public List<ImageTagResponse> searchTags(String tagName) {
-	    String userIp = utils.getUserIp();
-	    ServiceLogger.info("IP {} is searching for images with tag: {}", userIp, tagName);
-
-	    List<ImageResponse> matchingImages = new ArrayList<>();
-
-	    for (Image image : imageRepository.findAll()) {
-	        GetObjectTaggingResponse tags = functions.getAllTags(image);
-	        boolean hasTag = tags.tagSet().stream()
-	            .anyMatch(tag -> tag.key().equalsIgnoreCase(tagName));
-
-	        if (hasTag) {
-	            matchingImages.add(mapper.fromImage(image));
-	        }
-	    }
-
-	    if (matchingImages.isEmpty()) {
-	        String message = String.format("No image found with tag: %s", tagName);
-	        ServiceLogger.warn(message);
-	        throw new NotFoundException(message);
-	    }
-
-	    return matchingImages;
-	}
-	
-	@Transactional
-	public ImageTagResponse removeTag(String image, String tagName) {
-		
-	}
-	
-	@Transactional
-	public ItemTagResponse deleteTag(String tagName) {
-		
-	}
-	
-	
-	/*
-	
-	public byte[] encryptData(byte[] data, SecretKey key) throws Exception {
-	    Cipher cipher = Cipher.getInstance("AES");
-	    cipher.init(Cipher.ENCRYPT_MODE, key);
-	    return cipher.doFinal(data);
-	}
-	
-	public void uploadEncrypted(String bucket, String keys, byte[] data, SecretKey secretKey) throws Exception {
-	    byte[] encrypted = encryptData(data, secretKey);
-
-	    awsConfig.getS3Client()
-	    		.putObject(PutObjectRequest.builder()
-	            .bucket(bucket)
-	            .key(keys)
-	            .contentType("application/octet-stream")
-	            .build(),
-	        RequestBody.fromBytes(encrypted));
-	}
-
-	*/
-	// compressed data -- Later
 	
 }
