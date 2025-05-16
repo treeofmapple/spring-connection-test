@@ -33,8 +33,9 @@ public class ProductControllerAlt {
 	}
 	
 	@PostMapping("/generate")
-	public ResponseEntity<String> generateProducts() {
-		service.generateProducts();
+	public ResponseEntity<String> generateProducts(@RequestParam int quantity) {
+		service.generateProducts(quantity);
 		return ResponseEntity.status(HttpStatus.CREATED).body("Generated");
 	}
+	
 }

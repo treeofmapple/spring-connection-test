@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductService {
 
-	private static int QUANTITY = 50;
 	private final ProductRepository repository;
 	private final ProductMapper mapper;
 	private final GenerateData data;
@@ -131,9 +130,9 @@ public class ProductService {
         }
     }
 
-	public void generateProducts() {
+	public void generateProducts(int quantity) {
     	repository.deleteAll();
-		for(int i = 0; i <= QUANTITY; i++) {
+		for(int i = 0; i <= quantity; i++) {
 			var gen = data.datagen();
 			repository.save(gen);
 		}
