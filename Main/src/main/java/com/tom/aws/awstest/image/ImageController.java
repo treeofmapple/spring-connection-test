@@ -25,13 +25,13 @@ public class ImageController {
 	
 	@GetMapping(value = "/get/all", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<ImageResponse>> searchAllObjects() {
-		var response = service.searchAllObjects();
+		var response = service.findAll();
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ImageResponse> searchObjectByName(@RequestParam("name") String image) {
-		var response = service.searchObjectByName(image);
+		var response = service.findObjectByName(image);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 

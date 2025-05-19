@@ -33,6 +33,9 @@ public class Image extends Auditable {
 
 	@Column(name = "image_name", nullable = false, unique = true)
 	private String name;
+	
+	@Column(name = "description", nullable = true, unique = false)
+	private String description;
 
 	@Column(name = "object_key", nullable = false, unique = true)
 	private String objectKey;

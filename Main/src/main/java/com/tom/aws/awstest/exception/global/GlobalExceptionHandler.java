@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.tom.aws.awstest.exception.AlreadyExistsException;
 import com.tom.aws.awstest.exception.BadRequestException;
-import com.tom.aws.awstest.exception.DuplicateException;
+import com.tom.aws.awstest.exception.ConflictException;
 import com.tom.aws.awstest.exception.InternalException;
 import com.tom.aws.awstest.exception.InvalidDateException;
 import com.tom.aws.awstest.exception.NotFoundException;
@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(exp.getMessage(), HttpStatus.NOT_FOUND, request, null);
     }
 
-    @ExceptionHandler({ AlreadyExistsException.class, DuplicateException.class })
+    @ExceptionHandler({ AlreadyExistsException.class, ConflictException.class })
     public ResponseEntity<ErrorResponse> handleConflictException(RuntimeException exp, HttpServletRequest request) {
         return buildErrorResponse(exp.getMessage(), HttpStatus.CONFLICT, request, null);
     }

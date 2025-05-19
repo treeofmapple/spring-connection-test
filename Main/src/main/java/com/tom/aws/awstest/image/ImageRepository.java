@@ -1,6 +1,5 @@
 package com.tom.aws.awstest.image;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,11 +9,9 @@ import jakarta.transaction.Transactional;
 
 public interface ImageRepository extends JpaRepository<Image, Long> {
 
-	List<Image> findByName(String name);
-	
 	boolean existsByName(String name);
 	
-	Optional<Image> findByNameContainingIgnoreCase(String name);
+	Optional<Image> findByName(String name);
 	
 	@Modifying
 	@Transactional

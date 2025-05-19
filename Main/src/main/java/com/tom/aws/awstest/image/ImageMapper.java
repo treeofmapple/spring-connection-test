@@ -1,5 +1,7 @@
 package com.tom.aws.awstest.image;
 
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -19,5 +21,6 @@ public interface ImageMapper {
 	@Mapping(source = "createdAt", target = "createdAt")
 	@Mapping(source = "updatedAt", target = "updatedAt")
 	ImageResponse fromImage(Image image);
-	
+
+	ImagePageResponse fromPage(List<ImageResponse> imagePage, int page, int size, int totalPages);
 }

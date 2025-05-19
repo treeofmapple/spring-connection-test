@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.tom.aws.awstest.common.DataMerger;
-import com.tom.aws.awstest.common.GenerateData;
+import com.tom.aws.awstest.common.GenData;
 import com.tom.aws.awstest.common.ServiceLogger;
 import com.tom.aws.awstest.common.SystemUtils;
 import com.tom.aws.awstest.exception.BadRequestException;
@@ -21,7 +21,7 @@ public class ProductService {
 
 	private final ProductRepository repository;
 	private final ProductMapper mapper;
-	private final GenerateData data;
+	private final GenData data;
 	private final DataMerger merger;
 	private final SystemUtils utils;
 	
@@ -133,7 +133,7 @@ public class ProductService {
 	public void generateProducts(int quantity) {
     	repository.deleteAll();
 		for(int i = 0; i <= quantity; i++) {
-			var gen = data.datagen();
+			var gen = data.genProduct();
 			repository.save(gen);
 		}
 	}

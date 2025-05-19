@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,7 +15,6 @@ import com.tom.aws.awstest.common.AwsFunctions;
 import com.tom.aws.awstest.common.DataMerger;
 import com.tom.aws.awstest.common.ServiceLogger;
 import com.tom.aws.awstest.common.SystemUtils;
-import com.tom.aws.awstest.exception.NotFoundException;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,29 +30,55 @@ public class ImageService {
 	private final ImageMapper mapper;
 	private final SystemUtils utils;
 	private final DataMerger merger;
+	private final ImageUtils repoCall;
+	private final int PAGE_SIZE = 20; 
 
-	public List<ImageResponse> searchAllObjects() {
+	public List<ImageResponse> findAll() {
 		String userIp = utils.getUserIp();
 		ServiceLogger.info("IP {} is searching for all objects", userIp);
-		List<Image> images = repository.findAll();
-		if(images.isEmpty()) {
-			ServiceLogger.warn("No products found");
-			throw new NotFoundException("No products found in the database");
-		}
-		return images.stream().map(mapper::fromImage).collect(Collectors.toList());
+		return repoCall.findObjectList().stream().map(mapper::fromImage).collect(Collectors.toList());
 	}
 	
-	public ImageResponse searchObjectByName(String name) {
+	public ImagePageResponse findAll(int page){
+		Pageable pageable = PageRequest.of(page, PAGE_SIZE);
+		Page<Image> imagePage = repository.findAll(pageable);
+		return mapper.fromPage(repoCall.findObjectListPaged(imagePage), imagePage.getTotalPages(), imagePage.getSize(), imagePage.getTotalPages());
+	}
+	
+	public ImageResponse findObjectByName(String name) {
 		String userIp = utils.getUserIp();
 		ServiceLogger.info("IP {} is searching for object by name: {}", userIp, name);
-		return repository.findByNameContainingIgnoreCase(name)
-				.map(mapper::fromImage)
-				.orElseThrow(() -> {
-			String message = String.format("Product with id: %s was not found", name);
-			ServiceLogger.error(message);
-			return new NotFoundException(message);
-		});
+		var image = repoCall.findObject(name);
+		return mapper.fromImage(image);
 	}
+	
+	
+	@Transactional
+	private ImageResponse addDescription(String image, String description) {
+		String userIp = utils.getUserIp();
+		ServiceLogger.info("IP {} is adding an description", userIp, description);
+
+		Image images = repoCall.findObject(image);
+		
+		images.setDescription(description);
+		
+		repository.save(images);
+		return mapper.fromImage(images);
+	}
+	
+	@Transactional
+	private ImageResponse removeDescription(String image, String description) {
+		String userIp = utils.getUserIp();
+		ServiceLogger.info("IP {} is removing an description", userIp, description);
+		
+		Image images = repoCall.findObject(image);
+		
+		images.setDescription("No description");
+		
+		repository.save(images);
+		return mapper.fromImage(images);
+	}
+	
 	
 	@Transactional
 	public ImageResponse uploadObject(MultipartFile file) {
@@ -58,6 +86,8 @@ public class ImageService {
 		ServiceLogger.info("IP {} is uploading an object", userIp);
 		String key = "images/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
 	    
+		repoCall.ensureObjectExist(file.getOriginalFilename());
+		
 		functions.putObject(key, file);
 		
 		String s3Url = functions.buildS3Url(key);
@@ -72,15 +102,13 @@ public class ImageService {
 	public byte[] downloadObject(String name) {
 		String userIp = utils.getUserIp();
 		ServiceLogger.info("IP {} is downloading image with name: {}", userIp, name);
-		Image images = repository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
-            String message = String.format("Image with name %s not found", name);
-            ServiceLogger.error(message);
-            return new NotFoundException(message);
-		});
-		
+
+		repoCall.ensureObjectNotExist(name);
+		Image images = repoCall.findObject(name);
 		return functions.objectAsBytes(images);
 	}
 	
+	// tweak to upload error per item
 	@Transactional
 	public List<ImageResponse> uploadMultiple(MultipartFile[] files) {
 		String userIp = utils.getUserIp();
@@ -101,7 +129,8 @@ public class ImageService {
 
 	    return responses;
 	}
-	
+
+	// tweak to download error per item
 	@Transactional
 	public byte[][] downloadMultiple(List<String> names) {
 	    String userIp = utils.getUserIp();
@@ -111,12 +140,8 @@ public class ImageService {
 
 	    for (int i = 0; i < names.size(); i++) {
 	        String name = names.get(i);
-	        Image images = repository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
-	            String message = String.format("Image with name %s not found", name);
-	            ServiceLogger.error(message);
-	            return new NotFoundException(message);
-	        });
-
+			Image images = repoCall.findObject(name);
+	        
 	        result[i] = functions.objectAsBytes(images);
 	    }
 
@@ -127,13 +152,9 @@ public class ImageService {
 	public String deleteObject(String name) {
 		String userIp = utils.getUserIp();
 		ServiceLogger.info("IP {} is searching for all objects", userIp);
-		
-		Image images = repository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
-            String message = String.format("Image with name %s not found", name);
-            ServiceLogger.error(message);
-            return new NotFoundException(message);
-		});
-		
+		Image images = repoCall.findObject(name);
+	
+		repoCall.ensureObjectNotExist(name);
 		functions.deleteObject(images);
         repository.delete(images);
         ServiceLogger.info("Successfully deleted image with name: {}", name);
@@ -144,15 +165,12 @@ public class ImageService {
 	public ImageResponse renameObject(String name , String newName) {
 		String userIp = utils.getUserIp();
 		ServiceLogger.info("IP {} is renaming object with name: {} to: {}", userIp, name, newName);
-		Image images = repository.findByNameContainingIgnoreCase(name).orElseThrow(() -> {
-            String message = String.format("Image with name %s not found", name);
-            ServiceLogger.error(message);
-            return new NotFoundException(message);
-		});
+		repoCall.ensureObjectExist(name);
+		Image images = repoCall.findObject(name);
 		
 		String newKey = functions.renameObject(images, newName);
-		
 		String newUrl = functions.buildS3Url(newKey);
+
 		merger.mergeData(images, newKey, newUrl);
 	    repository.save(images);
 		

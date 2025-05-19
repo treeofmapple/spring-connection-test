@@ -14,7 +14,6 @@ public record ImageResponse(
 		
 ) {
 
-	public record TagDTO(String tagKey, String tagValue) {
-	}
+	public record TagDTO(String tagKey, String tagValue) {}
 	
 }
