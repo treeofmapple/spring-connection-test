@@ -52,7 +52,6 @@ public class ImageService {
 		return mapper.fromImage(image);
 	}
 	
-	
 	@Transactional
 	private ImageResponse addDescription(String image, String description) {
 		String userIp = utils.getUserIp();
@@ -78,7 +77,6 @@ public class ImageService {
 		repository.save(images);
 		return mapper.fromImage(images);
 	}
-	
 	
 	@Transactional
 	public ImageResponse uploadObject(MultipartFile file) {
