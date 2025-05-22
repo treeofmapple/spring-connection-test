@@ -7,7 +7,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,21 +21,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Table(name = "notes")
+@Table(name = "notes", indexes = {
+		@Index(name = "", columnList = "note_name")
+})
 public class Notes extends Auditable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
 	
+	@NotBlank
+	@Size(max = 150)
 	@Column(name = "note_name", nullable = false, unique = true)
 	private String name;
 	
-	@Column(name = "stored_note", nullable = true, unique = false)
-	private byte[] objectStored;
-	
 	@Column(name = "description", nullable = true, unique = false)
 	private String description;
-	
 	
 }

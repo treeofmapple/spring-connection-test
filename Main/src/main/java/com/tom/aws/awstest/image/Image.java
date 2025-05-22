@@ -45,6 +45,9 @@ public class Image extends Auditable {
 
 	@Column(name = "content_type", nullable = false, unique = false)
 	private String contentType;
+	
+	@Column(name = "archivated", nullable = false, unique = false)
+	private Boolean archivated = false;
 
 	@Column(name = "size", nullable = false, unique = false)
 	private Long size;

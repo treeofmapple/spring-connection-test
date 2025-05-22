@@ -61,6 +61,25 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
+<!--
+	
+	need to add kafka
+	jta
+	mongodb
+	reactive web
+	websocket
+	grpc
+	hateoas
+	graphql
+	redis
+	mail sender
+	security
+	spring batch
+	jjwt
+	
+-->
+
+
 		<!-- Observation -->
 		<dependency>
 			<groupId>io.micrometer</groupId>
