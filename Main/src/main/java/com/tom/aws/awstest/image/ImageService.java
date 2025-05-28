@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.tom.aws.awstest.common.AwsFunctions;
-import com.tom.aws.awstest.common.DataMerger;
 import com.tom.aws.awstest.common.ServiceLogger;
 import com.tom.aws.awstest.common.SystemUtils;
 
@@ -29,7 +28,6 @@ public class ImageService {
 	private final ImageRepository repository;
 	private final ImageMapper mapper;
 	private final SystemUtils utils;
-	private final DataMerger merger;
 	private final ImageUtils repoCall;
 	private final int PAGE_SIZE = 20; 
 
@@ -91,7 +89,7 @@ public class ImageService {
 		String s3Url = functions.buildS3Url(key);
 		
 		var image = new Image();
-	    merger.mergeData(image, file.getOriginalFilename(), key, s3Url, file.getContentType(), file.getSize());
+	    repoCall.mergeData(image, file.getOriginalFilename(), key, s3Url, file.getContentType(), file.getSize());
 	    repository.save(image);
 	    return mapper.fromImage(image);
 	}
@@ -118,7 +116,7 @@ public class ImageService {
 	        functions.putObject(key, file);
 	        String s3Url = functions.buildS3Url(key);
             var image = new Image();
-            merger.mergeData(image, file.getOriginalFilename(), key, s3Url, file.getContentType(), file.getSize());
+            repoCall.mergeData(image, file.getOriginalFilename(), key, s3Url, file.getContentType(), file.getSize());
             repository.save(image);
 
             responses.add(mapper.fromImage(image));
@@ -169,7 +167,7 @@ public class ImageService {
 		String newKey = functions.renameObject(images, newName);
 		String newUrl = functions.buildS3Url(newKey);
 
-		merger.mergeData(images, newKey, newUrl);
+		repoCall.mergeData(images, newKey, newUrl);
 	    repository.save(images);
 		
 		return mapper.fromImage(images);

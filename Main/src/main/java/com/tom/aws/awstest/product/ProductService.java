@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.tom.aws.awstest.common.DataMerger;
 import com.tom.aws.awstest.common.GenData;
 import com.tom.aws.awstest.common.ServiceLogger;
 import com.tom.aws.awstest.common.SystemUtils;
@@ -22,8 +21,8 @@ public class ProductService {
 	private final ProductRepository repository;
 	private final ProductMapper mapper;
 	private final GenData data;
-	private final DataMerger merger;
 	private final SystemUtils utils;
+	private final ProductUtil productUtil;
 	
     public ProductResponse findProductId(Long productId) {
     	String userIp = utils.getUserIp();
@@ -88,7 +87,7 @@ public class ProductService {
                     return new NotFoundException(message);
                 });
         
-        merger.mergeData(product, request);
+        productUtil.mergeData(product, request);
         repository.save(product);
         ServiceLogger.info("Product updated successfully with id: {}", product.getId());
         return product.getName();
