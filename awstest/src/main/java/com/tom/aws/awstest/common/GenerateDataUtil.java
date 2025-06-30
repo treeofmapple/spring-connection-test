@@ -17,7 +17,6 @@ public class GenerateDataUtil {
 
 	private Faker faker;
 	
-	@SuppressWarnings("unused")
 	private final AtomicLong atomicCounter = new AtomicLong(1);
 	private final ThreadLocalRandom loc = ThreadLocalRandom.current();
 	private final Set<String> generatedNames = new HashSet<>();
