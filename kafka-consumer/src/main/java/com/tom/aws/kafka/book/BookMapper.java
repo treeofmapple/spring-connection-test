@@ -28,6 +28,9 @@ public interface BookMapper {
 	Book updateBookFromData(@MappingTarget Book book, String isbn, String title, String author, BigDecimal price,
 			LocalDate publishedDate, Integer StockQuantity);
 
+	@Mapping(target = "id", ignore = true)
+	Book toEntity(BookDTO book);
+	
 	List<BookResponse> toResponseList(List<Book> books);
 	
 	default BookPageResponse toBookPageResponse(Page<Book> page) {

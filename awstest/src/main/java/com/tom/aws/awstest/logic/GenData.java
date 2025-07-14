@@ -41,7 +41,7 @@ public class GenData {
 	private final ImageMapper imageMapper;
 	private final BookMapper mapper;
 	private final AwsFunctions functions;
-	private GenerateDataUtil dataUtil;
+	private final GenerateDataUtil dataUtil;
 
     @Async
     @Transactional
@@ -63,7 +63,6 @@ public class GenData {
 		bookRepository.saveAll(booksToSave);
     }
     
-    @Async
     @Transactional
     public Book processGenerateAnBook() {
     	var gen = genBook();

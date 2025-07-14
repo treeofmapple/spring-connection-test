@@ -17,8 +17,6 @@ public interface BookMapper {
 	@Mapping(target = "isbn", ignore = true)
 	Book build(BookRequest request);
 	
-    @Mapping(source = "createdAt", target = "createdAt") 
-    @Mapping(source = "updatedAt", target = "updatedAt") 
 	BookResponse toResponse(Book book);
 	
 	@Mapping(target = "id", ignore = true)
@@ -26,8 +24,10 @@ public interface BookMapper {
 	
 	@Mapping(target = "id", ignore = true)
 	Book updateBookFromData(@MappingTarget Book book, String isbn, String title, String author, BigDecimal price,
-			LocalDate publishedDate, Integer StockQuantity);
+			LocalDate publishedDate, Integer stockQuantity);
 
+	BookDTO toKafka(Book book);
+	
 	List<BookResponse> toResponseList(List<Book> books);
 	
 	default BookPageResponse toBookPageResponse(Page<Book> page) {

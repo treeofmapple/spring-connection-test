@@ -31,7 +31,7 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 public class ImageService {
 
-	@Value("${application.data.allowed}")
+	@Value("${application.data.allowed:image/jpeg,image/png,image/gif,image/webp}")
 	private List<String> ALLOWED_IMAGE_TYPES = 
 	Stream.of("image/jpeg", "image/png", "image/gif", "image/webp")
 	.collect(Collectors.toCollection(ArrayList::new));

@@ -11,9 +11,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
-import com.tom.aws.kafka.book.Book;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.tom.aws.kafka.book.BookDTO;
 
 @Configuration
 public class KafkaConsumerConfig {
@@ -29,22 +32,30 @@ public class KafkaConsumerConfig {
 		Map<String, Object> props = new HashMap<>();
 		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 		props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-		props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
 		return props;
 	}
 
 	@Bean
-	ConsumerFactory<String, Book> consumerFactory() {
+	ConsumerFactory<String, BookDTO> consumerFactory() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+		
+		JsonDeserializer<BookDTO> jsonDeserializer = new JsonDeserializer<>(BookDTO.class, objectMapper);
+        jsonDeserializer.setUseTypeHeaders(false);
+        jsonDeserializer.addTrustedPackages("*");
+
+        ErrorHandlingDeserializer<BookDTO> errorHandlingDeserializer = new ErrorHandlingDeserializer<>(jsonDeserializer);
+
 		return new DefaultKafkaConsumerFactory<>(
 				consumerConfigs(), 
 				new StringDeserializer(),
-				new JsonDeserializer<>(Book.class));
+				errorHandlingDeserializer); 
+		
 	}
 
 	@Bean
-	ConcurrentKafkaListenerContainerFactory<String, Book> kafkaListenerContainerFactory() {
-		ConcurrentKafkaListenerContainerFactory<String, Book> factory = 
+	ConcurrentKafkaListenerContainerFactory<String, BookDTO> kafkaListenerContainerFactory() {
+		ConcurrentKafkaListenerContainerFactory<String, BookDTO> factory = 
 				new ConcurrentKafkaListenerContainerFactory<>();
 		factory.setConsumerFactory(consumerFactory());
 		return factory;

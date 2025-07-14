@@ -30,6 +30,8 @@ jaeger:
   tracing:
     enabled: ${JAEGER_ENABLED:false}
     url: ${JAEGER_URL}
+    ratio: ${JAEGER_RATIO:0.1}
+    batch: ${JAEGER_BATCH:100}
 
 loki:
   enabled: ${LOKI_ENABLED:false}

@@ -1,3 +1,4 @@
+#!/bin/sh
 set -e
 
 sleep 5

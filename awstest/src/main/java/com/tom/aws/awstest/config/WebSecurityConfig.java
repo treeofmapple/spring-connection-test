@@ -41,7 +41,8 @@ public class WebSecurityConfig {
 	        .exceptionHandling(exception -> 
 	            exception.authenticationEntryPoint(unauthorizedHandler))
 	        .authorizeHttpRequests(auth -> auth
-	            .requestMatchers(endpoints).authenticated()
+                .requestMatchers("/v1/traces/**").permitAll()
+        		.requestMatchers(endpoints).authenticated()
 	            .anyRequest().permitAll()
 	        )
 	        .httpBasic(Customizer.withDefaults()) 

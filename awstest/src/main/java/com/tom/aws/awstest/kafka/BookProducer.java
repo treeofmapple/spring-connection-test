@@ -5,6 +5,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import com.tom.aws.awstest.book.Book;
+import com.tom.aws.awstest.book.BookDTO;
+import com.tom.aws.awstest.book.BookMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -12,13 +14,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BookProducer {
 
-	private final KafkaTemplate<String, Book> kafkaTemplate;
+	private final KafkaTemplate<String, BookDTO> kafkaTemplate;
+	private final BookMapper mapper;
 	
     @Value("${spring.kafka.producer.topic.name}")
     private String topicName;
 	
     public void sendBook(Book book) {
-        kafkaTemplate.send(topicName, book);
+    	var bookEntity = mapper.toKafka(book);
+        kafkaTemplate.send(topicName, bookEntity);
     }
     
 }

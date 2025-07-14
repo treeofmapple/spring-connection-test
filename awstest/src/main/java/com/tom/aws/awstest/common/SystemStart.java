@@ -2,12 +2,11 @@ package com.tom.aws.awstest.common;
 
 import org.springframework.stereotype.Component;
 
-import com.tom.aws.awstest.config.AwsStorageConfig;
-
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import software.amazon.awssdk.services.s3.S3Client;
 
 @Log4j2
 @Component
@@ -15,7 +14,7 @@ import lombok.extern.log4j.Log4j2;
 public class SystemStart {
 
     private final AwsProperties properties;
-	private final AwsStorageConfig awsConfig;
+	private final S3Client s3Client;
 	
 	@Getter
 	private boolean s3Connected = false;
@@ -23,7 +22,7 @@ public class SystemStart {
 	@PostConstruct
 	public void verifyS3Connection() {
 	    try {
-	        awsConfig.getS3Client().getBucketLocation(b -> b.bucket(properties.getBucket()));
+	        s3Client.getBucketLocation(b -> b.bucket(properties.getBucket()));
 	        log.info("Connection successful on bucket: {}", properties.getBucket());
 	        s3Connected = true;
 	    } catch (Exception e) {

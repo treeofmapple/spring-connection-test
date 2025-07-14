@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.tom.aws.awstest.common.AwsProperties;
 
-import lombok.Getter;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -28,29 +28,26 @@ import software.amazon.awssdk.services.s3.model.VersioningConfiguration;
 public class AwsStorageConfig {
 
     private final AwsProperties properties;
+    private final S3Client s3Client;
     
-    @Getter
-    S3Client s3Client;
-
     @Bean
-    S3Client s3Client() {
+    static S3Client s3Client(AwsProperties properties) {
         return S3Client.builder()
-        		.endpointOverride(URI.create(properties.getEndpoint()))
+                .endpointOverride(URI.create(properties.getEndpoint()))
                 .region(Region.of(properties.getRegion()))
-                //.credentialsProvider(EnvironmentVariableCredentialsProvider.create())
                 .credentialsProvider(StaticCredentialsProvider.create(
-                		AwsBasicCredentials.create(properties.getAccessKeyId(), properties.getSecretAccessKey())))
+                        AwsBasicCredentials.create(properties.getAccessKeyId(), properties.getSecretAccessKey())))
+                .forcePathStyle(true)
                 .build();
-
     }
-        /*
-        
-        if(properties.isAccelerateEnabled()) {
-        	enableAccelerateMode();
+
+    @PostConstruct
+    public void initializeBucketFeatures() {
+        if (properties.isAccelerateEnabled()) {
+            // enableAccelerateMode();
         }
-        enableVersioning();
-        
-        */
+        // enableVersioning();
+    }
     
 	@SuppressWarnings("unused")
 	private void enableAccelerateMode() {

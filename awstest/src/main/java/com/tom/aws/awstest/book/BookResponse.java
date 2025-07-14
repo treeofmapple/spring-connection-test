@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public record BookResponse(
 		
 		Long id,
@@ -14,6 +16,7 @@ public record BookResponse(
 		
 		String author,
 		
+		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "0.00") 
 		BigDecimal price,
 		
 		LocalDate publishedDate,

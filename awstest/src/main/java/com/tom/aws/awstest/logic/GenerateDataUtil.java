@@ -16,12 +16,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import com.tom.aws.awstest.image.ImageGenResponse;
 
 import net.datafaker.Faker;
 
-public final class GenerateDataUtil {
+@Component
+public class GenerateDataUtil {
 
 	@Value("${application.data.allowed}")
 	private List<String> contentTypes = 
