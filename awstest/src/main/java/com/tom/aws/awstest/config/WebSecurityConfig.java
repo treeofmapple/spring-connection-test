@@ -1,8 +1,5 @@
 package com.tom.aws.awstest.config;
 
-import java.io.IOException;
-import java.util.Arrays;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,36 +14,35 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-import com.tom.aws.awstest.common.ServiceLogger;
-import com.tom.aws.awstest.common.WhitelistLoader;
-import com.tom.aws.awstest.exception.AuthEntryPointJwt;
+import com.tom.aws.awstest.exception.global.AuthEntryPointJwt;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 @Configuration
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 	
-	private final WhitelistLoader whitelist;
 	private final AuthEntryPointJwt unauthorizedHandler;
 	
-	@Value("${application.security.user}")
+	@Value("${settings.security.generated.user}")
 	private String user;
 	
-	@Value("${application.security.password}")
+	@Value("${settings.security.generated.password}")
 	private String password;
 	
-	private String[] whiteListUrls;
-
+	@Value("${application.endpoints.authenticated}")
+	private String endpoints;
+	
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-	    loadData();
 	    http
 	        .exceptionHandling(exception -> 
 	            exception.authenticationEntryPoint(unauthorizedHandler))
 	        .authorizeHttpRequests(auth -> auth
-	            .requestMatchers(whiteListUrls).permitAll()
-	            .anyRequest().authenticated()
+	            .requestMatchers(endpoints).authenticated()
+	            .anyRequest().permitAll()
 	        )
 	        .httpBasic(Customizer.withDefaults()) 
 	        .sessionManagement(sess -> 
@@ -68,15 +64,7 @@ public class WebSecurityConfig {
     
     @Bean
     PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(16);
+        return new BCryptPasswordEncoder(12);
     }
     
-    private void loadData() {
-    	try {
-    	    whiteListUrls = whitelist.loadWhitelist();
-    	} catch (IOException e) {
-    		ServiceLogger.warn("Loaded whitelist URLs: " + Arrays.toString(whiteListUrls));
-    	    throw new RuntimeException("Failed to load whitelist", e);
-    	}
-    }
 }

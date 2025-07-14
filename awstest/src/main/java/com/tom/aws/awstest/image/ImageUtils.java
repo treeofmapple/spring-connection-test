@@ -1,78 +1,57 @@
 package com.tom.aws.awstest.image;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Component;
 
-import com.tom.aws.awstest.common.ServiceLogger;
-import com.tom.aws.awstest.exception.ConflictException;
 import com.tom.aws.awstest.exception.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class ImageUtils {
 
 	private final ImageRepository repository;
-	private final ImageMapper mapper;
 	
-	public List<Image> findObjectList() {
-		List<Image> image = repository.findAll();
-		if(image.isEmpty()) {
-			String message = "No products found in the database";
-			ServiceLogger.warn(message);
-			throw new NotFoundException(message);
+    public Image findImageById(Long query) {
+        return repository.findById(query).orElseThrow(
+        		() -> new NotFoundException("Image not found: " + query));
+    }
+	
+    public Image findImageByName(String query) {
+    	return repository.findByName(query).orElseThrow(
+    			() -> new NotFoundException("Image not found: " + query));
+    }
+    
+    public Page<Image> findByIdOrNamePageable(String query, Pageable pageable) {
+    	if(query == null || query.isBlank()) {
+    		throw new NotFoundException("Image not found: " + query);
+    	}
+    	try {
+    		Long userId = Long.parseLong(query);
+    		return repository.findById(userId, pageable);
+    	} catch(NotFoundException e) {
+    		return repository.findByName(query, pageable);
 		}
-		return image;
-	}
-	
-	public List<ImageResponse> findObjectListPaged(Page<Image> imagePage) {
-		List<ImageResponse> content = imagePage
-				.stream()
-				.map(mapper::fromImage)
-				.collect(Collectors.toList());
-		return content;
-	}
-	
-	public Image findObject(String name) {
-		return repository.findByName(name).orElseThrow(() -> {
-            String message = String.format("Image with name %s not found", name);
-            ServiceLogger.error(message);
-            return new NotFoundException(message);
-		});
-	}
-	
-	public void ensureObjectExist(String name) {
-		if (repository.existsByName(name)) {
-			String message = "Object already exists: " + name;
-			ServiceLogger.warn(message);
-			throw new ConflictException(message);
+    }
+    
+    public Image findByIdOrName(String query) {
+    	if(query == null || query.isBlank()) {
+    		throw new NotFoundException("Image not found: " + query);
+    	}
+    	try {
+    		Long userId = Long.parseLong(query);
+    		return findImageById(userId);
+    	} catch(RuntimeException e) {
+    		return findImageByName(query);
 		}
-	}
-
-	public void ensureObjectNotExist(String name) {
-		if (!repository.existsByName(name)) {
-			String message = "Object with name " + name + " not exists.";
-			ServiceLogger.warn(message);
-			throw new ConflictException(message);
-		}
-	}
-	
-	public void mergeData(Image images, String name, String key, String url, String contentType, long size) {
-		images.setName(name);
-		images.setDescription("No description");
-		images.setObjectKey(key);
-		images.setObjectUrl(url);
-		images.setSize(size);
-		images.setContentType(contentType);
-	}	
-	
-	public void mergeData(Image images, String key, String url) {
-		images.setObjectKey(key);
-		images.setObjectUrl(url);
-	}
-	
+    }
+    
+    public void checkIfObjectAlreadyExists(Image currentImage, String newImageName) {
+    	if(repository.existsByNameAndIdNot(newImageName, currentImage.getId())) {
+    		throw new NotFoundException("Object already exists: " + newImageName);
+    	}
+    }
+    
 }

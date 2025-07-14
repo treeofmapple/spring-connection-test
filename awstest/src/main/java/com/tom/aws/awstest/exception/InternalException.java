@@ -1,12 +1,10 @@
 package com.tom.aws.awstest.exception;
 
-import com.tom.aws.awstest.exception.global.CustomGlobalException;
-
 import lombok.EqualsAndHashCode;
 
 @SuppressWarnings("serial")
 @EqualsAndHashCode(callSuper = true)
-public class InternalException extends CustomGlobalException {
+public class InternalException extends RuntimeException {
 	
 	public InternalException(String msg) {
 		super(msg);

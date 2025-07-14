@@ -1,12 +1,12 @@
 package com.tom.aws.awstest.exception;
 
-import com.tom.aws.awstest.exception.global.CustomGlobalException;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import lombok.EqualsAndHashCode;
 
 @SuppressWarnings("serial")
 @EqualsAndHashCode(callSuper = true)
-public class DuplicateException extends CustomGlobalException {
+public class DuplicateException extends DataIntegrityViolationException {
 	
 	public DuplicateException(String msg) {
 		super(msg);

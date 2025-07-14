@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,32 +19,35 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Table(name = "image")
+@Table(name = "image", indexes = {
+		@Index(name = "idx_image_name", columnList = "image_name")
+})
 public class Image extends Auditable {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "image_name", nullable = false, unique = true)
+	@Column(name = "image_name", 
+			nullable = false)
 	private String name;
-	
-	@Column(name = "description", nullable = true, unique = false)
-	private String description;
 
-	@Column(name = "object_key", nullable = false, unique = true)
+	@Column(name = "object_key", 
+			nullable = false, 
+			unique = true)
 	private String objectKey;
 
-	@Column(name = "object_url", nullable = false, unique = true)
+	@Column(name = "object_url", 
+			nullable = false, 
+			unique = true)
 	private String objectUrl;
 
-	@Column(name = "content_type", nullable = false, unique = false)
+	@Column(name = "content_type", 
+			nullable = false)
 	private String contentType;
-	
-	@Column(name = "archivated", nullable = false, unique = false)
-	private Boolean archivated = false;
 
-	@Column(name = "size", nullable = false, unique = false)
+	@Column(name = "size", 
+			nullable = false)
 	private Long size;
-	
+
 }

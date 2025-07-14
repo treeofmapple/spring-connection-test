@@ -1,7 +1,10 @@
 package com.tom.aws.awstest.models;
 
 
-import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
+import org.springframework.data.annotation.Version;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
@@ -13,21 +16,30 @@ import lombok.Data;
 @MappedSuperclass
 public abstract class Auditable {
 
-	@Column(name = "created_at", nullable = false, updatable = false)
-	private LocalDateTime createdAt;
+	@Column(name = "created_at", 
+			nullable = false, 
+			updatable = false)
+	private ZonedDateTime createdAt;
 
-	@Column(name = "updated_at", nullable = false)
-	private LocalDateTime updatedAt;
+	@Column(name = "updated_at", 
+			nullable = false)
+	private ZonedDateTime updatedAt;
 
+	@Version
+	@Column(name = "version", 
+			nullable = false)
+	private Long version = 0L;
+	
 	@PrePersist
 	protected void onCreate() {
-		this.setCreatedAt(LocalDateTime.now());
-		this.setUpdatedAt(LocalDateTime.now());
+		ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+		this.createdAt = now;
+		this.updatedAt = now;
 	}
 
 	@PreUpdate
 	protected void onUpdate() {
-		this.setUpdatedAt(LocalDateTime.now());
+		this.updatedAt = ZonedDateTime.now(ZoneOffset.UTC);
 	}
 
 }

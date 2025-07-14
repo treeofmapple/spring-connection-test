@@ -1,23 +1,22 @@
 package com.tom.aws.awstest.common;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.ClassPathResource;
 
 public class CustomBanner implements Banner {
 
+	private final SystemUtils utils;
+
+	public CustomBanner() {
+		this.utils = new SystemUtils();
+	}
+	
 	@Override
 	public void printBanner(Environment environment, Class<?> sourceClass, PrintStream out) {
-		getPathResource(out);
+		utils.getBannerPathResource(out);
 		try {
 			Package springPackage = SpringBootVersion.class.getPackage();
 			String version = (springPackage != null) ? springPackage.getImplementationVersion() : "unknown";
@@ -26,48 +25,21 @@ public class CustomBanner implements Banner {
             String serverPort = environment.getProperty("server.port", "8080");
             String profiles = String.join(", ", environment.getActiveProfiles());
             String protocol = sslEnabled ? "https" : "http";
-            String ip = getPublicIp();
+            
+            String machineIp = utils.getLocalMachineIp();
+            String publicIp = utils.getMachinePublicIp();
             
             out.println();
             out.println("Powered by Spring Boot: " + version);
             out.println("APP: " + appName);
             out.println("Active Profile: " + profiles);
             out.println("====================================================================================");
-            out.printf("Running at: %s://%s:%s%n", protocol, ip, serverPort);
+            out.printf("Running at private IP: %s://%s:%s%n", protocol, machineIp, serverPort);
+            out.printf("Running at public IP: %s://%s:%s%n", protocol, publicIp, serverPort);
             out.println("====================================================================================");
         } catch (Exception e) {
             out.println("Failed to print custom banner: " + e.getMessage());
         }
     }
 	
-	private String getPublicIp() {
-	    String publicIp = "Unknown";
-	    try {
-	        @SuppressWarnings("deprecation")
-			URL url = new URL("https://ifconfig.me");
-	        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-	        connection.setRequestMethod("GET");
-	        connection.setRequestProperty("User-Agent", "curl");
-
-	        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-	            publicIp = reader.readLine();
-	        }
-	    } catch (IOException e) {
-	        ServiceLogger.error(e.getMessage());
-	    }
-	    return publicIp;
-	}
-	
-	private void getPathResource(PrintStream out) {
-		ClassPathResource resource = new ClassPathResource("banner/banner.txt");
-		try (BufferedReader reader = new BufferedReader(
-				new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				out.println(line);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 }

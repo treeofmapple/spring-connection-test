@@ -1,19 +1,17 @@
 package com.tom.aws.awstest.image;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.time.ZonedDateTime;
 
 public record ImageResponse(
 		
-	String name,
-	String contentType,
-	Long size,
-	LocalDateTime createdAt,
-	LocalDateTime updatedAt,
-	List<TagDTO> tags
-		
-) {
+		long id,
+		String name,
+	    String objectUrl,
+	    String contentType,
+	    long size,
+	    ZonedDateTime createdAt,
+	    ZonedDateTime updatedAt
+	    
+		) {
 
-	public record TagDTO(String tagKey, String tagValue) {}
-	
 }

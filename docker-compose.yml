@@ -1,0 +1,181 @@
+services:
+  # Spring Boot Applications
+  aws-tester:
+    build: 
+      context: ./awstest
+      dockerfile: Dockerfile
+    container_name: aws-tester
+    restart: unless-stopped
+    depends_on:
+      postgres-aws:
+        condition: service_started
+      minio:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
+      kafka:
+        condition: service_healthy 
+    ports:
+      - "${PRODUCER_PORT}:8000"
+    env_file:
+      - aws.env
+
+  kafka-consumer:
+    build: 
+      context: ./kafka-consumer
+      dockerfile: Dockerfile
+    container_name: kafka-consumer
+    restart: unless-stopped
+    depends_on:
+      postgres-consumer:
+        condition: service_started 
+      kafka:
+        condition: service_healthy
+    ports:
+      - "${CONSUMER_PORT}:8001"
+    env_file:
+      - consumer.env
+
+  # Databases
+  
+  postgres-aws:
+    image: postgres:15
+    container_name: postgres-aws
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${PRODUCER_DB_USER}
+      - POSTGRES_PASSWORD=${PRODUCER_DB_PASSWORD}
+      - POSTGRES_DB=${PRODUCER_DB_NAME}
+    ports:
+      - "${PRODUCER_DB_PORT}:5432"
+    volumes:
+      - postgres_aws_data:/var/lib/postgresql/data
+
+  postgres-consumer:
+    image: postgres:15
+    container_name: postgres-consumer
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${CONSUMER_DB_USER}
+      - POSTGRES_PASSWORD=${CONSUMER_DB_PASSWORD}
+      - POSTGRES_DB=${CONSUMER_DB_NAME}
+    ports:
+      - "${CONSUMER_DB_PORT}:5432"
+    volumes:
+      - postgres_consumer_data:/var/lib/postgresql/data
+    
+  # Kafka Message Broker
+  
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    expose:
+      - "29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092, PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+
+  # Logging & Monitoring Stack
+      
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command: --config.file=/etc/prometheus/prometheus.yml
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.53
+    container_name: jaeger
+    restart: unless-stopped
+    ports:
+      - "6831:6831/udp"
+      - "14268:14268"  
+      - "16686:16686"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - loki
+      - prometheus
+    volumes:
+      - grafana_data:/data
+  
+  # S3-Compatible Storage (Local Cloudflare R2)
+                  
+  minio:
+    image: minio/minio:RELEASE.2023-05-04T21-44-30Z
+    container_name: minio
+    ports:
+      - "9000:9000"  # API port
+      - "9001:9001"  # Console port
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  mc-setup:
+    image: minio/mc
+    container_name: mc-setup
+    depends_on:
+      minio:
+        condition: service_healthy # This is key! It waits for MinIO to be ready.
+    volumes:
+      - ./setup.sh:/app/setup.sh
+    entrypoint: /bin/sh
+    command: "/app/setup.sh"
+
+volumes:
+  postgres_aws_data:
+    driver: local
+  postgres_consumer_data:
+    driver: local
+  grafana_data:
+    driver: local
+  minio_data:
+    driver: local
+    
+    
+    

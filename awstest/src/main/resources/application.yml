@@ -1,11 +1,9 @@
 spring:
   profiles:
-    active: actuator, console, database, service
+    active: actuator, console, ${PROFILE:dev}
   application:
-      name: connectionTester
-
-tracing:
-  enabled: false
+      name: Connection-Tester
 
 server:
-  port: ${SERVER_PORT:8000} # set to 8443 to secure
+  port: ${SERVER_PORT:8000}
+  forward-headers-strategy: framework

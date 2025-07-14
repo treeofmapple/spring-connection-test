@@ -8,11 +8,11 @@ import org.springframework.context.annotation.Configuration;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 
 @Configuration
-@ConditionalOnProperty(name = "tracing.enabled", havingValue = "true", matchIfMissing = false)
+@ConditionalOnProperty(name = "jaeger.tracing.enabled", havingValue = "true", matchIfMissing = false)
 public class TelemetryConfig {
 
 	@Bean
-	OtlpGrpcSpanExporter otlpGrpcSpanExporter(@Value("${tracing.url}") String url) {
+	OtlpGrpcSpanExporter otlpGrpcSpanExporter(@Value("${jaeger.tracing.url}") String url) {
 		return OtlpGrpcSpanExporter.builder().setEndpoint(url).build(); 
 	}
 	

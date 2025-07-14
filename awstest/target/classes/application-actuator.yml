@@ -17,7 +17,7 @@ management:
       access: unrestricted 
 
   tracing:
-    enabled: true
+    enabled: ${PROMETHEUS_ENABLED:false}
     sampling:
       probability: 1.0
 
@@ -26,5 +26,11 @@ management:
       export:
         enabled: true
 
-tracing:
-  url: ${JAEGER_URL}
+jaeger:
+  tracing:
+    enabled: ${JAEGER_ENABLED:false}
+    url: ${JAEGER_URL}
+
+loki:
+  enabled: ${LOKI_ENABLED:false}
+  url: ${LOKI_URL}

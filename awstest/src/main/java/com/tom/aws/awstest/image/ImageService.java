@@ -1,176 +1,143 @@
 package com.tom.aws.awstest.image;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.tom.aws.awstest.common.AwsFunctions;
-import com.tom.aws.awstest.common.ServiceLogger;
-import com.tom.aws.awstest.common.SystemUtils;
+import com.tom.aws.awstest.common.ResourceUtils;
+import com.tom.aws.awstest.common.SecurityUtils;
+import com.tom.aws.awstest.logic.AwsFunctions;
+import com.tom.aws.awstest.logic.GenData;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class ImageService {
+
+	@Value("${application.data.allowed}")
+	private List<String> ALLOWED_IMAGE_TYPES = 
+	Stream.of("image/jpeg", "image/png", "image/gif", "image/webp")
+	.collect(Collectors.toCollection(ArrayList::new));
 	
-	// check if something exists on the database then don't allow it to upload it...
+	@Value("${application.page.size:10}")
+	private int PAGE_SIZE;
 	
-	private final AwsFunctions functions;
 	private final ImageRepository repository;
 	private final ImageMapper mapper;
-	private final SystemUtils utils;
-	private final ImageUtils repoCall;
-	private final int PAGE_SIZE = 20; 
-
-	public List<ImageResponse> findAll() {
-		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is searching for all objects", userIp);
-		return repoCall.findObjectList().stream().map(mapper::fromImage).collect(Collectors.toList());
-	}
+	private final ImageUtils imageUtils;
+	private final AwsFunctions functions;
+	private final SecurityUtils securityUtils;
+	private final ResourceUtils resourceUtils;
+	private final GenData dataGeneration;
 	
-	public ImagePageResponse findAll(int page){
+	@Transactional(readOnly = true)
+	public PageImageResponse searchObjectByParams(int page, String query) {
 		Pageable pageable = PageRequest.of(page, PAGE_SIZE);
-		Page<Image> imagePage = repository.findAll(pageable);
-		return mapper.fromPage(repoCall.findObjectListPaged(imagePage), imagePage.getTotalPages(), imagePage.getSize(), imagePage.getTotalPages());
+		var images = imageUtils.findByIdOrNamePageable(query, pageable);
+		return mapper.toResponse(images);
 	}
 	
-	public ImageResponse findObjectByName(String name) {
-		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is searching for object by name: {}", userIp, name);
-		var image = repoCall.findObject(name);
-		return mapper.fromImage(image);
-	}
-	
-	@Transactional
-	private ImageResponse addDescription(String image, String description) {
-		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is adding an description", userIp, description);
-
-		Image images = repoCall.findObject(image);
-		
-		images.setDescription(description);
-		
-		repository.save(images);
-		return mapper.fromImage(images);
-	}
-	
-	@Transactional
-	private ImageResponse removeDescription(String image, String description) {
-		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is removing an description", userIp, description);
-		
-		Image images = repoCall.findObject(image);
-		
-		images.setDescription("No description");
-		
-		repository.save(images);
-		return mapper.fromImage(images);
+	@Transactional(readOnly = true)
+	public ImageResponse searchObjectById(long query) {
+		var image = imageUtils.findImageById(query);
+		return mapper.toResponse(image);
 	}
 	
 	@Transactional
 	public ImageResponse uploadObject(MultipartFile file) {
-		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is uploading an object", userIp);
-		String key = "images/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
-	    
-		repoCall.ensureObjectExist(file.getOriginalFilename());
+		String userIp = securityUtils.getRequestingClientIp();
+		log.info("IP {} is uploading an object", userIp);
+
+		if (file.isEmpty()) {
+		    throw new IllegalArgumentException("Cannot upload an empty file.");
+		}
 		
-		functions.putObject(key, file);
+		long maxSizeInBytes = 20 * 1024 * 1024;
+		if (file.getSize() > maxSizeInBytes) {
+			throw new IllegalArgumentException("File size exceeds the 20MB limit.");
+		}
 		
-		String s3Url = functions.buildS3Url(key);
+        if (!ALLOWED_IMAGE_TYPES.contains(file.getContentType())) {
+            throw new IllegalArgumentException("Invalid file type. Only PNG and JPG images are allowed.");
+        }
 		
+        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
+		String generatedKey = "images/" + UUID.randomUUID() + "-" + originalFilename;
+		String s3Url = functions.uploadObject(generatedKey, file);
+
 		var image = new Image();
-	    repoCall.mergeData(image, file.getOriginalFilename(), key, s3Url, file.getContentType(), file.getSize());
-	    repository.save(image);
-	    return mapper.fromImage(image);
-	}
-	
-	@Transactional
-	public byte[] downloadObject(String name) {
-		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is downloading image with name: {}", userIp, name);
-
-		repoCall.ensureObjectNotExist(name);
-		Image images = repoCall.findObject(name);
-		return functions.objectAsBytes(images);
-	}
-	
-	// tweak to upload error per item
-	@Transactional
-	public List<ImageResponse> uploadMultiple(MultipartFile[] files) {
-		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is uploading an image", userIp);
-	    List<ImageResponse> responses = new ArrayList<>();
-
-	    for (MultipartFile file : files) {
-	        String key = "images/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
-	        functions.putObject(key, file);
-	        String s3Url = functions.buildS3Url(key);
-            var image = new Image();
-            repoCall.mergeData(image, file.getOriginalFilename(), key, s3Url, file.getContentType(), file.getSize());
-            repository.save(image);
-
-            responses.add(mapper.fromImage(image));
-
-	    }
-
-	    return responses;
+		var merged = mapper.mergeData(image, file, generatedKey, s3Url);
+		var imageSaved = repository.save(merged);
+	    return mapper.toResponse(imageSaved);
 	}
 
-	// tweak to download error per item
 	@Transactional
-	public byte[][] downloadMultiple(List<String> names) {
-	    String userIp = utils.getUserIp();
-	    ServiceLogger.info("IP {} is downloading multiple objects: {}", userIp, names);
-
-	    byte[][] result = new byte[names.size()][];
-
-	    for (int i = 0; i < names.size(); i++) {
-	        String name = names.get(i);
-			Image images = repoCall.findObject(name);
-	        
-	        result[i] = functions.objectAsBytes(images);
-	    }
-
-	    return result;
-	}
-	
-	@Transactional
-	public String deleteObject(String name) {
-		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is searching for all objects", userIp);
-		Image images = repoCall.findObject(name);
-	
-		repoCall.ensureObjectNotExist(name);
-		functions.deleteObject(images);
-        repository.delete(images);
-        ServiceLogger.info("Successfully deleted image with name: {}", name);
-        return "Image deleted successfully";
-	}
-	
-	@Transactional
-	public ImageResponse renameObject(String name , String newName) {
-		String userIp = utils.getUserIp();
-		ServiceLogger.info("IP {} is renaming object with name: {} to: {}", userIp, name, newName);
-		repoCall.ensureObjectExist(name);
-		Image images = repoCall.findObject(name);
+	public ImageExport downloadObject(String query) {
+		String userIp = securityUtils.getRequestingClientIp();
+		log.info("IP {} is removing object: {}", userIp, query);
+		var image = imageUtils.findByIdOrName(query);
 		
-		String newKey = functions.renameObject(images, newName);
-		String newUrl = functions.buildS3Url(newKey);
-
-		repoCall.mergeData(images, newKey, newUrl);
-	    repository.save(images);
+		var imageData = functions.downloadObject(image.getObjectKey());
 		
-		return mapper.fromImage(images);
+		String zipFileName =  image.getName() + ".zip";
+		byte[] zipBytes = resourceUtils.resourceToBytes(imageData, image.getName());
+
+		Resource resource = new ByteArrayResource(zipBytes);
+		return new ImageExport(resource, zipFileName, zipBytes.length);
+	}
+	
+	@Transactional
+	public ImageResponse renameObject(String query, String newName) {
+		String userIp = securityUtils.getRequestingClientIp();
+		log.info("IP {} is renaming object: {}, to {}", userIp, query, newName);
+		
+		var image = imageUtils.findByIdOrName(query);
+		String newKey = functions.renameObject(image, newName);
+		image.setObjectKey(newKey);
+		
+		repository.save(image);
+		return mapper.toResponse(image);
+	}
+	
+	@Transactional
+	public void removeObject(String query) {
+		String userIp = securityUtils.getRequestingClientIp();
+		log.info("IP {} is removing object", userIp);
+		
+		var image = imageUtils.findByIdOrName(query);
+        functions.deleteObject(image.getObjectKey());
+        repository.delete(image);
+        log.info("Successfully deleted image for note: {}", query);
+	}
+	
+	public PageImageResponse generateImages(int quantity) {
+		String userIp = securityUtils.getRequestingClientIp();
+		log.info("IP {} is generating {}: images", userIp, quantity);
+		
+		dataGeneration.processGenerateImages(quantity);
+		
+		Pageable pageable = PageRequest.of(0, PAGE_SIZE);
+		Page<Image> images = repository.findMostRecent(pageable);
+		
+		log.info("Images finished generation");
+		return mapper.toResponse(images);
 	}
 	
 }

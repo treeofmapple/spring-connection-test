@@ -1,81 +1,135 @@
 package com.tom.aws.awstest.exception.global;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.tom.aws.awstest.exception.ActiveSessionException;
 import com.tom.aws.awstest.exception.AlreadyExistsException;
-import com.tom.aws.awstest.exception.BadRequestException;
-import com.tom.aws.awstest.exception.ConflictException;
+import com.tom.aws.awstest.exception.DuplicateException;
 import com.tom.aws.awstest.exception.InternalException;
 import com.tom.aws.awstest.exception.InvalidDateException;
+import com.tom.aws.awstest.exception.LockedAccountException;
 import com.tom.aws.awstest.exception.NotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.log4j.Log4j2;
 
-@Log4j2
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+	@ExceptionHandler(ActiveSessionException.class)
+	public ResponseEntity<ErrorResponse> handleActiveSessionException(ActiveSessionException ex, HttpServletRequest request) {
+	    ErrorResponse errorDetails = new ErrorResponse(
+	            HttpStatus.CONFLICT.value(),
+	            "Session Conflict",
+	            ex.getMessage(),
+	            request.getRequestURI()
+	    );
+	    return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
+	}
+	
+    @ExceptionHandler(LockedAccountException.class)
+    public ResponseEntity<ErrorResponse> handleAccountLocked(LockedAccountException exp, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+        		HttpStatus.UNAUTHORIZED.value(),
+        		"Account Locked", 
+        		exp.getMessage(),
+        		request.getRequestURI()
+		);
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+	
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleTokenExpired(BadCredentialsException exp, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+        		HttpStatus.UNAUTHORIZED.value(),
+        		"Invalid Credentials", 
+        		exp.getMessage(),
+        		request.getRequestURI()
+		);
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+    
     @ExceptionHandler({ NotFoundException.class })
-    public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException exp, HttpServletRequest request) {
-        return buildErrorResponse(exp.getMessage(), HttpStatus.NOT_FOUND, request, null);
+    public ResponseEntity<ErrorResponse> handleResourceNotFound(NotFoundException exp, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.NOT_FOUND.value(),
+            "Not Found",
+            exp.getMessage(),
+            request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler({ AlreadyExistsException.class, ConflictException.class })
-    public ResponseEntity<ErrorResponse> handleConflictException(RuntimeException exp, HttpServletRequest request) {
-        return buildErrorResponse(exp.getMessage(), HttpStatus.CONFLICT, request, null);
+	@ExceptionHandler({ AlreadyExistsException.class, DuplicateException.class })
+    public ResponseEntity<ErrorResponse> handleDataIntegrityConflict(RuntimeException exp, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.CONFLICT.value(),
+            "Conflict",
+            exp.getMessage(),
+            request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
     
     @ExceptionHandler({ InvalidDateException.class })
-    public ResponseEntity<ErrorResponse> handleDateException(NumberFormatException exp, HttpServletRequest request) {
-        return buildErrorResponse(exp.getMessage(), HttpStatus.EXPECTATION_FAILED, request, null);
+    public ResponseEntity<ErrorResponse> handleInvalidInputDate(NumberFormatException exp, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            "Invalid Input",
+            exp.getMessage(),
+            request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
-    
-    @ExceptionHandler({ IllegalStateException.class, BadRequestException.class })
-    public ResponseEntity<ErrorResponse> handleIllegalException(IllegalStateException exp, HttpServletRequest request) {
-        return buildErrorResponse(exp.getMessage(), HttpStatus.BAD_REQUEST, request, null);
+	
+    @ExceptionHandler({ IllegalStateException.class })
+    public ResponseEntity<ErrorResponse> handleInvalidStateTransition(IllegalStateException exp, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            "Bad Request",
+            exp.getMessage(),
+            request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({ InternalException.class })
-    public ResponseEntity<ErrorResponse> handleInternalException(InternalException exp, HttpServletRequest request) {
-        return buildErrorResponse(exp.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, request, null);
+    public ResponseEntity<ErrorResponse> handleUnexpectedServerError(InternalException exp, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            "Internal Server Error",
+            exp.getMessage(),
+            request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 	
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException exp, HttpServletRequest request) {
         Map<String, String> validationErrors = new HashMap<>();
+        
         exp.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             validationErrors.put(fieldName, errorMessage);
         });
-
-        return buildErrorResponse("Validation failed for one or more fields", HttpStatus.BAD_REQUEST, request, validationErrors);
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            "Validation Error",
+            "Validation failed for one or more fields",
+            request.getRequestURI(),
+            validationErrors
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-	private ResponseEntity<ErrorResponse> buildErrorResponse(
-			String message, HttpStatus status, HttpServletRequest request, Map<String, String> validationErrors
-		) {
-		
-		ErrorResponse response = new ErrorResponse(
-				LocalDateTime.now(),
-				status.value(),
-				status.getReasonPhrase(),
-				message,
-				request.getRequestURI(),
-				validationErrors
-		);
-			
-		return ResponseEntity.status(status).body(response);
-	}
-	
 }

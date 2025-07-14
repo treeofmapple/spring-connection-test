@@ -2,25 +2,40 @@ package com.tom.aws.awstest.image;
 
 import java.util.List;
 
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
-import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
-@Service
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ImageMapper {
 
-	ImageMapper INSTANCE = Mappers.getMapper(ImageMapper.class);
+	ImageResponse toResponse(Image image);
 	
-	// @Mapping(source = "", target = "")
-	@Mapping(source = "name", target = "name")
-	@Mapping(source = "contentType", target = "contentType")
-	@Mapping(source = "size", target = "size")
-	@Mapping(source = "createdAt", target = "createdAt")
-	@Mapping(source = "updatedAt", target = "updatedAt")
-	ImageResponse fromImage(Image image);
+    @Mapping(source = "file.originalFilename", target = "name")
+    @Mapping(source = "file.contentType", target = "contentType")
+    @Mapping(source = "file.size", target = "size")
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    Image mergeData(@MappingTarget Image Image, MultipartFile file, String objectKey, String objectUrl);
 
-	ImagePageResponse fromPage(List<ImageResponse> imagePage, int page, int size, int totalPages);
+    List<ImageResponse> toResponseList(List<Image> images);
+    
+    default PageImageResponse toResponse(Page<Image> page) {
+    	if(page == null) {
+    		return null;
+    	}
+		List<ImageResponse> content = toResponseList(page.getContent());
+		return new PageImageResponse(
+				content,
+				page.getNumber(),
+				page.getSize(),
+				page.getTotalPages(),
+				page.getTotalElements()
+			);
+    }
+    
 }
